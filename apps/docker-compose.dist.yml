@@ -267,87 +267,87 @@ services:
     # CLIFF annotator service
     # -----------------------
     #
-    # cliff-annotator:
-    #     image: dockermediacloud/cliff-annotator:release
-    #     init: true
-    #     networks:
-    #         - default
-    #     expose:
-    #         - 8080
-    #     deploy:
-    #         <<: *misc-apps_deploy_placement_constraints
-    #         <<: *endpoint-mode-dnsrr
-    #         # Worker count
-    #         replicas: 1
-    #         resources:
-    #             limits:
-    #                 # CPU core limit
-    #                 cpus: "1"
-    #                 # RAM limit
-    #                 memory: "6G"
+    cliff-annotator:
+        image: dockermediacloud/cliff-annotator:release
+        init: true
+        networks:
+            - default
+        expose:
+            - 8080
+        deploy:
+            <<: *misc-apps_deploy_placement_constraints
+            <<: *endpoint-mode-dnsrr
+            # Worker count
+            replicas: 1
+            resources:
+                limits:
+                    # CPU core limit
+                    cpus: "1"
+                    # RAM limit
+                    memory: "6G"
 
 
     #
     # CLIFF fetch annotation
     # ----------------------
     #
-    # cliff-fetch-annotation:
-    #     image: dockermediacloud/cliff-fetch-annotation:release
-    #     init: true
-    #     networks:
-    #         - default
-    #     environment:
-    #         <<: *common-configuration
-    #     depends_on:
-    #         - cliff-annotator
-    #         - postgresql-pgbouncer
-    #         - rabbitmq-server
-    #     deploy:
-    #         <<: *misc-apps_deploy_placement_constraints
-    #         <<: *endpoint-mode-dnsrr
-    #         # Worker count
-    #         replicas: 4
-    #         resources:
-    #             limits:
-    #                 # CPU core limit
-    #                 cpus: "1"
-    #                 # RAM limit
-    #                 memory: "256M"
+    cliff-fetch-annotation:
+        image: dockermediacloud/cliff-fetch-annotation:release
+        init: true
+        networks:
+            - default
+        environment:
+            <<: *common-configuration
+        depends_on:
+            - cliff-annotator
+            - postgresql-pgbouncer
+            - rabbitmq-server
+        deploy:
+            <<: *misc-apps_deploy_placement_constraints
+            <<: *endpoint-mode-dnsrr
+            # Worker count
+            replicas: 4
+            resources:
+                limits:
+                    # CPU core limit
+                    cpus: "1"
+                    # RAM limit
+                    memory: "256M"
 
     #
     # CLIFF update story tags
     # -----------------------
     #
-    # cliff-update-story-tags:
-    #     image: dockermediacloud/cliff-update-story-tags:release
-    #     init: true
-    #     networks:
-    #         - default
-    #     environment:
-    #         <<: *common-configuration
-    #         # CLIFF version tag
-    #         MC_CLIFF_VERSION_TAG: "cliff_clavin_v2.6.0"
-    #         # Tag set to use for geographical name entities
-    #         MC_CLIFF_GEONAMES_TAG_SET: "cliff_geonames"
-    #         # Tag set to use for organization name entities
-    #         MC_CLIFF_ORGANIZATIONS_TAG_SET: "cliff_organizations"
-    #         # Tag set to use for person name entities
-    #         MC_CLIFF_PEOPLE_TAG_SET: "cliff_people"
-    #     depends_on:
-    #         - postgresql-pgbouncer
-    #         - rabbitmq-server
-    #     deploy:
-    #         <<: *misc-apps_deploy_placement_constraints
-    #         <<: *endpoint-mode-dnsrr
-    #         # Worker count
-    #         replicas: 1
-    #         # Auto-restart on crashes
-    #         resources:
-    #             limits:
-    #                 # CPU core limit
-    #                 cpus: "1"
-    #                 # RAM limit
-    #                 memory: "256M"
+    cliff-update-story-tags:
+        image: dockermediacloud/cliff-update-story-tags:release
+        init: true
+        networks:
+            - default
+        environment:
+            <<: *common-configuration
+            # CLIFF version tag
+            MC_CLIFF_VERSION_TAG: "cliff_clavin_v2.6.0"
+            # Tag set to use for geographical name entities
+            MC_CLIFF_GEONAMES_TAG_SET: "cliff_geonames"
+            # Tag set to use for organization name entities
+            MC_CLIFF_ORGANIZATIONS_TAG_SET: "cliff_organizations"
+            # Tag set to use for person name entities
+            MC_CLIFF_PEOPLE_TAG_SET: "cliff_people"
+        depends_on:
+            - postgresql-pgbouncer
+            - rabbitmq-server
+        deploy:
+            <<: *misc-apps_deploy_placement_constraints
+            <<: *endpoint-mode-dnsrr
+            # Worker count
+            replicas: 1
+            # Auto-restart on crashes
+            resources:
+                limits:
+                    # CPU core limit
+                    cpus: "1"
+                    # RAM limit
+                    memory: "256M"
 
     #
     # AP crawler
