@@ -275,8 +275,8 @@ services:
         expose:
             - 8080
         deploy:
-            <<: *misc-apps_deploy_placement_constraints
-            <<: *endpoint-mode-dnsrr
+            # <<: *misc-apps_deploy_placement_constraints
+            # <<: *endpoint-mode-dnsrr
             # Worker count
             replicas: 1
             resources:
@@ -303,8 +303,8 @@ services:
             - postgresql-pgbouncer
             - rabbitmq-server
         deploy:
-            <<: *misc-apps_deploy_placement_constraints
-            <<: *endpoint-mode-dnsrr
+            # <<: *misc-apps_deploy_placement_constraints
+            # <<: *endpoint-mode-dnsrr
             # Worker count
             replicas: 4
             resources:
@@ -337,8 +337,8 @@ services:
             - postgresql-pgbouncer
             - rabbitmq-server
         deploy:
-            <<: *misc-apps_deploy_placement_constraints
-            <<: *endpoint-mode-dnsrr
+            # <<: *misc-apps_deploy_placement_constraints
+            # <<: *endpoint-mode-dnsrr
             # Worker count
             replicas: 1
             # Auto-restart on crashes
@@ -1018,81 +1018,81 @@ services:
     # NYT-Based News Tagger service
     # -----------------------------
     #
-    # nytlabels-annotator:
-    #     image: dockermediacloud/nytlabels-annotator:release
-    #     init: true
-    #     networks:
-    #         - default
-    #     expose:
-    #         - 8080
-    #     deploy:
-    #         <<: *misc-apps_deploy_placement_constraints
-    #         <<: *endpoint-mode-dnsrr
-    #         # Worker count
-    #         replicas: 1
-    #         resources:
-    #             limits:
-    #                 # CPU core limit
-    #                 cpus: "1"
-    #                 # RAM limit
-    #                 memory: "8G"
+    nytlabels-annotator:
+        image: dockermediacloud/nytlabels-annotator:release
+        init: true
+        networks:
+            - default
+        expose:
+            - 8080
+        deploy:
+            # <<: *misc-apps_deploy_placement_constraints
+            # <<: *endpoint-mode-dnsrr
+            # Worker count
+            replicas: 1
+            resources:
+                limits:
+                    # CPU core limit
+                    cpus: "1"
+                    # RAM limit
+                    memory: "6G"
 
     #
     # NYTLabels fetch annotation
     # ----------------------
     #
-    # nytlabels-fetch-annotation:
-    #     image: dockermediacloud/nytlabels-fetch-annotation:release
-    #     init: true
-    #     networks:
-    #         - default
-    #     environment:
-    #         <<: *common-configuration
-    #     depends_on:
-    #         - nytlabels-annotator
-    #         - postgresql-pgbouncer
-    #         - rabbitmq-server
-    #     deploy:
-    #         <<: *misc-apps_deploy_placement_constraints
-    #         <<: *endpoint-mode-dnsrr
-    #         # Worker count
-    #         replicas: 4
-    #         resources:
-    #             limits:
-    #                 # CPU core limit
-    #                 cpus: "1"
-    #                 # RAM limit
-    #                 memory: "256M"
+    nytlabels-fetch-annotation:
+        image: dockermediacloud/nytlabels-fetch-annotation:release
+        init: true
+        networks:
+            - default
+        environment:
+            <<: *common-configuration
+        depends_on:
+            - nytlabels-annotator
+            - postgresql-pgbouncer
+            - rabbitmq-server
+        deploy:
+            # <<: *misc-apps_deploy_placement_constraints
+            # <<: *endpoint-mode-dnsrr
+            # Worker count
+            replicas: 4
+            resources:
+                limits:
+                    # CPU core limit
+                    cpus: "1"
+                    # RAM limit
+                    memory: "256M"
 
     #
     # NYTLabels update story tags
     # -----------------------
     #
-    # nytlabels-update-story-tags:
-    #     image: dockermediacloud/nytlabels-update-story-tags:release
-    #     init: true
-    #     networks:
-    #         - default
-    #     environment:
-    #         <<: *common-configuration
-    #         # NYTLabels version tag
-    #         MC_NYTLABELS_VERSION_TAG: "nyt_labeller_v1.0.0"
-    #         # Tag set to use for NYTLabels-derived tags
-    #         MC_NYTLABELS_TAG_SET: "nyt_labels"
-    #     depends_on:
-    #         - postgresql-pgbouncer
-    #         - rabbitmq-server
-    #     deploy:
-    #         <<: *misc-apps_deploy_placement_constraints
-    #         <<: *endpoint-mode-dnsrr
-    #         # Worker count
-    #         replicas: 1
-    #         resources:
-    #             limits:
-    #                 # CPU core limit
-    #                 cpus: "1"
-    #                 # RAM limit
-    #                 memory: "256M"
+    nytlabels-update-story-tags:
+        image: dockermediacloud/nytlabels-update-story-tags:release
+        init: true
+        networks:
+            - default
+        environment:
+            <<: *common-configuration
+            # NYTLabels version tag
+            MC_NYTLABELS_VERSION_TAG: "nyt_labeller_v1.0.0"
+            # Tag set to use for NYTLabels-derived tags
+            MC_NYTLABELS_TAG_SET: "nyt_labels"
+        depends_on:
+            - postgresql-pgbouncer
+            - rabbitmq-server
+        deploy:
+            # <<: *misc-apps_deploy_placement_constraints
+            # <<: *endpoint-mode-dnsrr
+            # Worker count
+            replicas: 1
+            resources:
+                limits:
+                    # CPU core limit
+                    cpus: "1"
+                    # RAM limit
+                    memory: "256M"
 
     #
     # Fetch story podcast episode and store it in GCS
