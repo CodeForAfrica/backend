@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from mediawords.db import connect_to_db
+from mediawords.dbi.stories.postprocess import mark_as_processed
 from mediawords.job import JobBroker
 from mediawords.util.log import create_logger
 from mediawords.util.perl import decode_object_from_bytes_if_needed
@@ -40,8 +41,10 @@ def run_cliff_update_story_tags(stories_id: int) -> None:
             "Unable to process story ID %s with CLIFF: %s" % (stories_id, str(ex),)
         )
 
-    log.info("Adding story ID %d to NYTLabels fetch queue..." % stories_id)
-    JobBroker(queue_name='MediaWords::Job::NYTLabels::FetchAnnotation').add_to_queue(stories_id=stories_id)
+    # log.info("Adding story ID %d to NYTLabels fetch queue..." % stories_id)
+    # JobBroker(queue_name='MediaWords::Job::NYTLabels::FetchAnnotation').add_to_queue(stories_id=stories_id)
+    log.info("Marking story ID %d as processed..." % stories_id)
+    mark_as_processed(db=db, stories_id=stories_id)
 
     log.info("Finished updating tags for story ID %d" % stories_id)
 
