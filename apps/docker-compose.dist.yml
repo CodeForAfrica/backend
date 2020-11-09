@@ -319,7 +319,7 @@ services:
     # -----------------------
     #
     cliff-update-story-tags:
-        # image: dockermediacloud/cliff-update-story-tags:release
+        image: cliff-update-story-tags
         build: ./cliff-update-story-tags
         init: true
         networks:
@@ -762,7 +762,8 @@ services:
     # ------------------------
     #
     import-solr-data:
-        image: dockermediacloud/import-solr-data:release
+        image: import-solr-data
+        build: ./import-solr-data
         init: true
         networks:
             - default
