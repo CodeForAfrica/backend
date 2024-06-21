@@ -771,7 +771,7 @@ services:
     # ---------------
     #
     mail-opendkim-server:
-        image: esirk/mail-opendkim-server:release
+        image: codeforafrica/cs-mail-opendkim-server:release
         init: true
         networks:
             - default
@@ -801,7 +801,7 @@ services:
     # ---------------
     #
     mail-postfix-server:
-        image: esirk/mail-postfix-server:release
+        image: codeforafrica/cs-mail-postfix-server:release
         init: true
         networks:
             - default
@@ -958,7 +958,7 @@ services:
     #
     postgresql-server:
         #image: gcr.io/mcback/postgresql-server:release
-        image: esirk/postgresql-server:release
+        image: codeforafrica/cs-postgresql-server:release
         init: true
         networks:
             - default
@@ -990,7 +990,7 @@ services:
     # ------------------------------------
     #
     purge-object-caches:
-        image: esirk/purge-object-caches:release
+        image: codeforafrica/cs-purge-object-caches:release
         init: true
         networks:
             - default
@@ -1103,7 +1103,7 @@ services:
     # ------------------------------
     #
     sitemap-fetch-media-pages:
-        image: esirk/sitemap-fetch-media-pages:release
+        image: codeforafrica/cs-sitemap-fetch-media-pages:release
         init: true
         networks:
             - default
@@ -1201,7 +1201,7 @@ services:
     # -------------------------------
     #
     topics-extract-story-links:
-        image: esirk/topics-extract-story-links:release
+        image: codeforafrica/cs-topics-extract-story-links:release
         init: true
         networks:
             - default
@@ -1226,7 +1226,7 @@ services:
     # ----------------------
     #
     topics-fetch-link:
-        image: esirk/topics-fetch-link:release
+        image: codeforafrica/cs-topics-fetch-link:release
         init: true
         networks:
             - default
@@ -1251,7 +1251,7 @@ services:
     # ------------------
     #
     topics-fetch-twitter-urls:
-        image: esirk/topics-fetch-twitter-urls:release
+        image: codeforafrica/cs-topics-fetch-twitter-urls:release
         init: true
         networks:
             - default
@@ -1275,7 +1275,7 @@ services:
     # -------------------------
     #
     topics-map:
-        image: esirk/topics-map:release
+        image: codeforafrica/cs-topics-map:release
         init: true
         networks:
             - default
@@ -1298,7 +1298,7 @@ services:
     # ------------
     #
     topics-mine:
-        image: esirk/topics-mine:release
+        image: codeforafrica/cs-topics-mine:release
         init: true
         networks:
             - default
@@ -1323,7 +1323,7 @@ services:
     # -------------------
     #
     topics-mine-public:
-        image: esirk/topics-mine-public:release
+        image: codeforafrica/cs-topics-mine-public:release
         init: true
         networks:
             - default
@@ -1348,7 +1348,7 @@ services:
     # ----------------
     #
     topics-snapshot:
-        image: esirk/topics-snapshot:release
+        image: codeforafrica/cs-topics-snapshot:release
         init: true
         networks:
             - default
@@ -1374,7 +1374,7 @@ services:
     #
     webapp-api:
         #image: gcr.io/mcback/webapp-api:release
-        image: esirk/webapp-api
+        image: codeforafrica/cs-webapp-api
         #image: codeforafrica/civicsignal-webapp-api:release
         init: true
         networks:
@@ -1403,7 +1403,7 @@ services:
     # --------------------
     #
     webapp-httpd:
-        image: esirk/webapp-httpd:release
+        image: codeforafrica/cs-webapp-httpd:release
         init: true
         networks:
             - default
@@ -1433,7 +1433,7 @@ services:
     # ----------------
     #
     word2vec-generate-snapshot-model:
-        image: esirk/word2vec-generate-snapshot-model:release
+        image: codeforafrica/cs-word2vec-generate-snapshot-model:release
         init: true
         networks:
             - default
