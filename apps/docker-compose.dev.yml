@@ -590,7 +590,7 @@ services:
     # ----------------------------------
     #
     cron-rescraping-changes:
-        image: codeforafrica/cs-cron-rescraping-changes:releasesudo
+        image: codeforafrica/cs-cron-rescraping-changes:release
         init: true
         networks:
             - default
@@ -1176,8 +1176,7 @@ services:
     #
     webapp-api:
         #image: gcr.io/mcback/webapp-api:release
-        image: codeforafrica/cs-webapp-api
-        #image: codeforafrica/civicsignal-webapp-api:release
+        image: codeforafrica/cs-webapp-api:release
         init: true
         networks:
             - default
