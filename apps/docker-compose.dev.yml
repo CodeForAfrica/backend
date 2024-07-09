@@ -1023,7 +1023,7 @@ services:
         ports:
             # For connecting to through a SSH tunnel
             # MAKE SURE to BLOCK THIS PORT in provision/roles/docker/tasks/iptables.yml
-            - "15672:15672"
+            - "15674:15672"
         deploy:
             # DNSRR disabled as it's not supported with published ports.
             <<: *misc-apps_deploy_placement_constraints
@@ -1304,7 +1304,7 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: ../volumes/mediacloud/mediacloud/vol_rabbitmq_data
+            device: ../volumes/mediacloud/vol_rabbitmq_data
 
     # OpenDKIM configuration and keys
     vol_opendkim_config:
