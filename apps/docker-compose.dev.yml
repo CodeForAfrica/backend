@@ -224,33 +224,33 @@ x-solr-shard_base_deploy_resources:  &solr-shard_base_deploy_resources
             #
             # (each node has 32 cores and will be running 8 shards
             # each, so 32 / 8 = 4)
-            cpus: "4"
+            cpus: "1"
             # RAM limit
             #
-            # (each node has 192 GB of RAM and will be running 8 shards
-            # each, so 192 / 8 = 24)
-            memory: 24G
+            # set memory constraints for prod deployment based on available GB of RAM & No. shards
+            # set 4G mem limit for dev deployment
+            memory: 4G
 
 # Placement constraints for Solr shards that run on host #1
 x-solr-shard_base_deploy_placement_host1:   &solr-shard_base_deploy_placement_host1
     placement:
         constraints:
-            # Must run on the host with Solr data volume
-            - node.labels.role-solr-shards-host1 == true
+            # Dev deployment assuing single stack, defaults to manager
+            - node.role == manager
 
 # Placement constraints for Solr shards that run on host #2
 x-solr-shard_base_deploy_placement_host2:   &solr-shard_base_deploy_placement_host2
     placement:
         constraints:
-            # Must run on the host with Solr data volume
-            - node.labels.role-solr-shards-host2 == true
+            # Dev deployment assuing single stack, defaults to manager
+            - node.role == manager
 
 # Placement constraints for Solr shards that run on host #3
 x-solr-shard_base_deploy_placement_host3:   &solr-shard_base_deploy_placement_host3
     placement:
         constraints:
-            # Must run on the host with Solr data volume
-            - node.labels.role-solr-shards-host3 == true
+            # Dev deployment assuing single stack, defaults to manager
+            - node.role == manager
 
 
 #
@@ -265,8 +265,8 @@ x-solr-shard_base_deploy_placement_host3:   &solr-shard_base_deploy_placement_ho
 x-misc-apps_deploy_placement_constraints:   &misc-apps_deploy_placement_constraints
     placement:
         constraints:
-            # Must run on a host on which misc. apps are configured to run on
-            - node.labels.role-misc-apps == true
+            # Dev deployment assuing single stack, defaults to manager
+            - node.role == manager
 
 
 #
@@ -307,7 +307,7 @@ services:
                     # CPU core limit
                     cpus: "1"
                     # RAM limit
-                    memory: "6G"
+                    memory: "2G"
 
     #
     # Webapp proxy to CLIFF annotator service
@@ -461,12 +461,7 @@ services:
             # Shared with "webapp-httpd" container:
             - vol_daily_rss_dumps:/var/lib/daily_rss_dumps/
         deploy:
-            <<: *endpoint-mode-dnsrr
-            placement:
-                constraints:
-                    # Must run on the same host as the webapp-httpd server because they will be
-                    # sharing the volume with generated static RSS dumps
-                    - node.labels.role-webapp-httpd == true
+            <<: *misc-apps_deploy_endpoint_dnsrr
             resources:
                 limits:
                     # CPU core limit
@@ -726,7 +721,7 @@ services:
                     cpus: "1"
                     # If importer script is playing catch up and has to import
                     # many stories at once, it will require more memory
-                    memory: "8G"
+                    memory: "4G"
 
     #
     # Import stories by scraping Feedly
@@ -749,7 +744,7 @@ services:
                     # CPU core limit
                     cpus: "1"
                     # RAM limit (uses quite a lot of it until it OOMs)
-                    memory: "4G"
+                    memory: "2G"
 
     #
     # OpenDKIM server
@@ -769,11 +764,7 @@ services:
         volumes:
             - vol_opendkim_config:/etc/opendkim/
         deploy:
-            <<: *endpoint-mode-dnsrr
-            placement:
-                constraints:
-                    # Must run on the host with OpenDKIM data volume
-                    - node.labels.role-mail-opendkim == true
+            <<: *misc-apps_deploy_endpoint_dnsrr
             resources:
                 limits:
                     # CPU core limit
@@ -820,11 +811,7 @@ services:
         volumes:
             - vol_postfix_data:/var/lib/postfix/
         deploy:
-            <<: *endpoint-mode-dnsrr
-            placement:
-                constraints:
-                    # Must run on the host with Postfix data volume
-                    - node.labels.role-mail-postfix == true
+            <<: *misc-apps_deploy_endpoint_dnsrr
             resources:
                 limits:
                     # CPU core limit
@@ -958,14 +945,14 @@ services:
             - type: tmpfs
               target: /dev/shm
               tmpfs:
-                size: 17179869184   # 16 GB
+                size: 1073741824   # 1 GB
         deploy:
             # DNSRR disabled as it's not supported with published ports.
             # <<: *endpoint-mode-dnsrr
             placement:
                 constraints:
                     # Must run on the host with PostgreSQL data volume
-                    - node.labels.role-postgresql-server == true
+                    - node.role == manager
 
     #
     # Purge PostgreSQL object caches
@@ -1009,15 +996,11 @@ services:
         volumes:
             - vol_rabbitmq_data:/var/lib/rabbitmq/
         deploy:
-            <<: *endpoint-mode-dnsrr
-            placement:
-                constraints:
-                    # Must run on the host with RabbitMQ data volume
-                    - node.labels.role-rabbitmq-server == true
+            <<: *misc-apps_deploy_endpoint_dnsrr
             resources:
                 limits:
                     # CPU core limit
-                    cpus: "4"
+                    cpus: "1"
                     # RAM limit
                     memory: "2G"
 
@@ -1291,14 +1274,14 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_postgresql_data
+            device: ../volumes/mediacloud/vol_postgresql_data
 
     vol_email_templates:
         driver: local
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/CivicSignal-EmailTemplates
+            device: ../volumes/mediacloud/CivicSignal-EmailTemplates
 
     # Solr shard's data
     vol_solr_shard_data_01:
@@ -1306,14 +1289,14 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_solr_shard_data_01
+            device: ../volumes/mediacloud/vol_solr_shard_data_01
 
     vol_solr_shard_data_02:
         driver: local
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_solr_shard_data_02
+            device: ../volumes/mediacloud/vol_solr_shard_data_02
 
     # RabbitMQ data
     vol_rabbitmq_data:
@@ -1321,7 +1304,7 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_rabbitmq_data
+            device: ../volumes/mediacloud/mediacloud/vol_rabbitmq_data
 
     # OpenDKIM configuration and keys
     vol_opendkim_config:
@@ -1329,7 +1312,7 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_opendkim_config
+            device: ../volumes/mediacloud/vol_opendkim_config
 
     # Postfix data
     vol_postfix_data:
@@ -1337,7 +1320,7 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_postfix_data
+            device: ../volumes/mediacloud/vol_postfix_data
 
     # PgAdmin data
     vol_pgadmin_data:
@@ -1345,7 +1328,7 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_pgadmin_data
+            device: ../volumes/mediacloud/vol_pgadmin_data
 
     # Daily RSS dumps
     # (shared between cron_generate_daily_rss_dumps and webapp-httpd)
@@ -1354,5 +1337,5 @@ volumes:
         driver_opts:
             type: none
             o: bind
-            device: /home/ubuntu/space/mediacloud/vol_daily_rss_dumps
+            device: ../volumes/mediacloud/vol_daily_rss_dumps
 

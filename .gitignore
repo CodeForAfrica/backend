@@ -127,3 +127,5 @@ mediawords*.yml
 
 # test.log variations
 test*.log
+
+/volumes/
