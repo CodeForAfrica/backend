@@ -163,11 +163,11 @@ Media Cloud API 2.0 Spec for a more detailed description of the `q` and `fq` par
 
 The output of these calls is in exactly the same format as for the api/v2/stories/single call.
 
-URL: https://api.mediacloud.org/api/v2/stories/list?last_processed_stories_id=8625915
+URL: https://aapp.civicsignal.africag/api/v2/stories/list?last_processed_stories_id=8625915
 
 Return a stream of all stories processed by Media Cloud, greater than the `last_processed_stories_id`.
 
-URL: https://api.mediacloud.org/api/v2/stories/list?last_processed_stories_id=2523432&q=text:obama+AND+media_id:1
+URL: https://app.civicsignal.africa/api/v2/stories/list?last_processed_stories_id=2523432&q=text:obama+AND+media_id:1
 
 Return a stream of all stories from The New York Times mentioning `'obama'` greater than the given `last_processed_stories_id`.
 
@@ -195,7 +195,7 @@ This call updates a single existing story.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/stories/update
+URL: https://app.civicsignal.africa/api/v2/stories/update
 
 Input:
 
@@ -229,7 +229,7 @@ Output:
 
 Fetch raw CLIFF annotation for stories 1, 2 and a nonexistent story 3:
 
-URL:  https://api.mediacloud.org/api/v2/stories/cliff?stories_id=1&stories_id=2&stories_id=3
+URL:  https://app.civicsignal.africa/api/v2/stories/cliff?stories_id=1&stories_id=2&stories_id=3
 
 Response:
 
@@ -281,7 +281,7 @@ Response:
 
 Fetch raw NYTLabels annotation for stories 1, 2 and a nonexistent story 3:
 
-URL:  https://api.mediacloud.org/api/v2/stories/nytlabels?stories_id=1&stories_id=2&stories_id=3
+URL:  https://app.civicsignal.africa/api/v2/stories/nytlabels?stories_id=1&stories_id=2&stories_id=3
 
 Response:
 
@@ -351,7 +351,7 @@ rows parameter.
 
 Fetch sentences containing the stem 'vaccin*'
 
-URL:  https://api.mediacloud.org/api/v2/sentences/list?q=vaccin*
+URL:  https://app.civicsignal.africa/api/v2/sentences/list?q=vaccin*
 
 ```json
 [
@@ -452,7 +452,7 @@ for each tag_set included in the list of tags other than the tags added by this 
 
 ### Example
 
-URL: https://api.mediacloud.org/aip/v2/stories/put_tags
+URL: https://app.civicsignal.africa/aip/v2/stories/put_tags
 
 Input:
 
@@ -497,7 +497,7 @@ Output:
 
 ### Example
 
-https://api.mediacloud.org/api/v2/tags/create
+https:///api/v2/tags/create
 
 Input:
 
@@ -541,7 +541,7 @@ See api/v2/tags/create above.  The update call also requires a tags_id field
 
 ### Example
 
-https://api.mediacloud.org/api/v2/tags/update
+https://app.civicsignal.africa/api/v2/tags/update
 
 Input:
 
@@ -584,7 +584,7 @@ Output:
 
 ### Example
 
-https://api.mediacloud.org/api/v2/tag_sets/update/
+https://app.civicsignal.africa/api/v2/tag_sets/update/
 
 Input:
 
@@ -622,7 +622,7 @@ See tags/create above.  The tag_sets/update call also requires a tag_sets_id fie
 
 ### Example
 
-https://api.mediacloud.org/api/v2/tag_sets/update
+https://app.civicsignal.africa/api/v2/tag_sets/update
 
 Input:
 
@@ -678,7 +678,7 @@ The `active = true` (the default) will cause the feed to be regularly crawled.  
 
 Create a new feed in media_id 1:
 
-URL: https://api.mediacloud.org/api/v2/feeds/create
+URL: https://app.civicsignal.africa/api/v2/feeds/create
 
 Input:
 
@@ -720,7 +720,7 @@ See api/v2/feeds/create above.  The input document can contain any subset of fie
 
 Update the `active` of feed 1 to `false`.
 
-URL: https://api.mediacloud.org/api/v2/feeds/update
+URL: https://app.civicsignal.africa/api/v2/feeds/update
 
 Input:
 
@@ -908,7 +908,7 @@ The output is always a list of records with the fields described above.  The out
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/media/create (PUT)
+URL: https://app.civicsignal.africa/api/v2/media/create (PUT)
 
 Input:
 
@@ -957,7 +957,7 @@ See api/v2/media/create end point above for possible input fields.  The input re
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/media/update
+URL: https://app.civicsignal.africa/api/v2/media/update
 
 Input:
 
@@ -991,17 +991,17 @@ Suggestions will be listed in the order that they were submitted.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/media/list_suggestions
+URL: https://app.civicsignal.africa/api/v2/media/list_suggestions
 
 Output:
 
 ```json
 [
   {
-    "email": "hroberts@mediacloud.org",
+    "email": "hroberts@app.civicsignal.africa",
     "auth_users_id": 123,
-    "url": "http://mediacloud.org",
-    "feed_url": "http://mediacloud.org/feed/",
+    "url": "http://app.civicsignal.africa",
+    "feed_url": "http://app.civicsignal.africa/feed/",
     "reason": "Media Cloud is a great project",
     "tags_ids": [ 123, 456 ],
     "date_submitted": "2016-11-20 07:42:00",
@@ -1036,7 +1036,7 @@ Note that marking a suggestion as approved does not automatically create the med
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/media/mark_suggestion
+URL: https://app.civicsignal.africa/api/v2/media/mark_suggestion
 
 Input:
 
@@ -1088,7 +1088,7 @@ See `api/v2/users/list` below for sample output.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/users/list?search=foo
+URL: https://app.civicsignal.africa/api/v2/users/list?search=foo
 
 Output:
 
@@ -1171,7 +1171,7 @@ All of the input fields other than
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/users/update
+URL: https://app.civicsignal.africa/api/v2/users/update
 
 Input:
 
@@ -1208,7 +1208,7 @@ This call deletes a single existing user.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/users/update
+URL: https://app.civicsignal.africa/api/v2/users/update
 
 Input:
 
@@ -1236,7 +1236,7 @@ none.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/users/list\_roles
+URL: https://app.civicsignal.africa/api/v2/users/list\_roles
 
 Output:
 

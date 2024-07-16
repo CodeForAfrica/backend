@@ -176,15 +176,15 @@ Every call below includes a `key` parameter which will authenticate the user to 
 
 To get a key, register for a user:
 
-https://topics.mediacloud.org/#/user/signup
+https://topics.civicsignal.africa/#/user/signup
 
 Once you have an account go here to see your key:
 
-https://topics.mediacloud.org/#/user/profile
+https://topics.civicsignal.africa/#/user/profile
 
 ### Example
 
-https://api.mediacloud.org/api/v2/media/single/1?key=KRN4T5JGJ2A
+https://app.civicsignal.africa/api/v2/media/single/1?key=KRN4T5JGJ2A
 
 ## Python Client
 
@@ -233,7 +233,7 @@ The Media Cloud returns an appropriate HTTP status code for any error, along wit
 ## Request Limits
 
 Each user is limited to 1,000 API calls and 20,000 stories returned in any 7 day period.  Requests submitted beyond this
-limit will result in a status 403 error.  Users who need access to more requests should email info@mediacloud.org.
+limit will result in a status 403 error.  Users who need access to more requests should email civicsignal@codeforafrica.org.
 
 
 # Media
@@ -255,7 +255,7 @@ None.
 
 Fetching information on The New York Times
 
-URL: https://api.mediacloud.org/api/v2/media/single/1
+URL: https://app.civicsignal.africa:80/api/v2/media/single/1
 
 Response:
 
@@ -339,7 +339,7 @@ If the `q` parameter is specified, return only media that include at least on se
 All tags specified in the `tags\_id` parameter are OR'd together.  Additonal lists of tags can be specified in
 numbered tags_id lists, eg. `tags\_id\_1`. Each set of numbered tag lists will be AND'd together.
 
-URL: https://api.mediacloud.org/api/v2/media/list?last_media_id=1&rows=2
+URL: https://app.civicsignal.africa/api/v2/media/list?last_media_id=1&rows=2
 
 Output format is the same as for api/v2/media/single above.
 
@@ -363,7 +363,7 @@ This API end point allows the user to send a suggest a new media source to the M
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/media/submit_suggestion
+URL: https://app.civicsignal.africa/api/v2/media/submit_suggestion
 
 Input:
 ```json
@@ -432,7 +432,7 @@ volume.  More details are in the field descriptions below
 
 Fetch media health information for media source 4438:
 
-https://api.mediacloud.org/api/v2/mediahealth/list?media_id=4438
+https://app.civicsignal.africa/api/v2/mediahealth/list?media_id=4438
 
 Response:
 
@@ -498,7 +498,7 @@ None.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/feeds/single/1
+URL: https://app.civicsignal.africa/api/v2/feeds/single/1
 
 ```json
 [
@@ -528,7 +528,7 @@ URL: https://api.mediacloud.org/api/v2/feeds/single/1
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/feeds/list?media_id=1
+URL: https://app.civicsignal.africa/api/v2/feeds/list?media_id=1
 
 Output format is the same as for api/v2/feeds/single above.
 
@@ -569,7 +569,7 @@ The following table describes the meaning and origin of fields returned by both 
 
 Note: This fetches data on the CC licensed Global Voices story ["Myanmar's new flag and new name"](http://globalvoicesonline.org/2010/10/26/myanmars-new-flag-and-new-name/#comment-1733161) from November 2010.
 
-URL: https://api.mediacloud.org/api/v2/stories_public/single/27456565
+URL: https://app.civicsignal.africa/api/v2/stories_public/single/27456565
 
 
 ```json
@@ -644,11 +644,11 @@ an error.
 
 The output of these calls is in exactly the same format as for the api/v2/stories_public/single call.
 
-URL: https://api.mediacloud.org/api/v2/stories_public/list?last_processed_stories_id=8625915
+URL: https://app.civicsignal.africa/api/v2/stories_public/list?last_processed_stories_id=8625915
 
 Return a stream of all stories processed by Media Cloud, greater than the `last_processed_stories_id`.
 
-URL: https://api.mediacloud.org/api/v2/stories_public/list?last_processed_stories_id=2523432&q=text:obama+AND+media_id:1
+URL: https://app.civicsignal.africa/api/v2/stories_public/list?last_processed_stories_id=2523432&q=text:obama+AND+media_id:1
 
 Return a stream of all stories from The New York Times mentioning `'obama'` greater than the given `last_processed_stories_id`.
 
@@ -674,7 +674,7 @@ If split is specified, split the counts into periods set by split_period.
 
 Count stories containing the word 'obama' in The New York Times.
 
-URL: https://api.mediacloud.org/api/v2/stories_public/count?q=obama&fq=media_id:1
+URL: https://app.civicsignal.africa/api/v2/stories_public/count?q=obama&fq=media_id:1
 
 ```json
 {
@@ -684,7 +684,7 @@ URL: https://api.mediacloud.org/api/v2/stories_public/count?q=obama&fq=media_id:
 
 Count stories containing 'africa' in the New York Times for each week from 2014-01-01 to 2014-03-01:
 
-URL: https://api.mediacloud.org/api/v2/stories_public/count?split=1&split_period=week&q=africa%20AND%20media_id%3A1%20AND%20publish_day%3A%5B2014-01-01T00%3A00%3A00Z%20TO%202014-03-01T00%3A00%3A00Z%5D
+URL: https://app.civicsignal.africa/api/v2/stories_public/count?split=1&split_period=week&q=africa%20AND%20media_id%3A1%20AND%20publish_day%3A%5B2014-01-01T00%3A00%3A00Z%20TO%202014-03-01T00%3A00%3A00Z%5D
 
 ```json
 {
@@ -749,7 +749,7 @@ s applied before the tag_sets_id parameter, so fewer than limit (or zero) result
 
 Count tags in stories containing the word 'obama' in The New York Times.
 
-URL: https://api.mediacloud.org/api/v2/stories_public/tag_count?q=obama&fq=media_id:1&limit=3
+URL: https://app.civicsignal.africa/api/v2/stories_public/tag_count?q=obama&fq=media_id:1&limit=3
 
 ```json
 [
@@ -909,7 +909,7 @@ Setting the 'stats' field to true changes the structure of the response, as show
 
 Get word frequency counts for all sentences containing the word `'obama'` in The New York Times
 
-URL: <https://api.mediacloud.org/api/v2/wc/list?q=obama+AND+media_id:1>
+URL: <https://app.civicsignal.africa/api/v2/wc/list?q=obama+AND+media_id:1>
 
 ```json
 [
@@ -949,7 +949,7 @@ URL: <https://api.mediacloud.org/api/v2/wc/list?q=obama+AND+media_id:1>
 Get word frequency counts for all sentences containing the word `'obama'` in The New York Times, with
 stats data included
 
-URL: <https://api.mediacloud.org/api/v2/wc/list?q=obama+AND+media_id:1&stats=1>
+URL: <https://app.civicsignal.africa/api/v2/wc/list?q=obama+AND+media_id:1&stats=1>
 
 ```json
 
@@ -1040,7 +1040,7 @@ tag set.
 
 Fetching information on the tag 8876989.
 
-URL: https://api.mediacloud.org/api/v2/tags/single/8875027
+URL: https://app.civicsignal.africa/api/v2/tags/single/8875027
 
 Response:
 
@@ -1092,7 +1092,7 @@ returned.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/tags/list?rows=2&tag_sets_id=5&last_tags_id=8875026
+URL: https://app.civicsignal.africa/api/v2/tags/list?rows=2&tag_sets_id=5&last_tags_id=8875026
 
 ## api/v2/tag_sets/single/
 
@@ -1124,7 +1124,7 @@ tag set.
 
 Fetching information on the tag set 5.
 
-URL: https://api.mediacloud.org/api/v2/tag_sets/single/5
+URL: https://app.civicsignal.africa/api/v2/tag_sets/single/5
 
 Response:
 
@@ -1158,7 +1158,7 @@ None.
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/tag_sets/list
+URL: https://app.civicsignal.africa/api/v2/tag_sets/list
 
 # Registration and Authentication
 
@@ -1216,7 +1216,7 @@ After successful registraction, user is sent an email inviting him to open a lin
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/register>
+URL: <https://app.civicsignal.africa/api/v2/auth/register>
 
 Input:
 
@@ -1227,7 +1227,7 @@ Input:
     "full_name": "Foo Bar",
     "notes": "Just feeling like it.",
     "has_consented": 1,
-    "activation_url": "https://dashboard.mediacloud.org/activate"
+    "activation_url": "https://dashboard.civicsignal.africa/activate"
 }
 ```
 
@@ -1280,7 +1280,7 @@ Output:
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/activate>
+URL: <https://app.mcivicsignal.africa/api/v2/auth/activate>
 
 Input:
 
@@ -1342,14 +1342,14 @@ For the description of `activation_url`, see `auth/register`.
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/resend_activation_link>
+URL: <https://app.civicsignal.africa/api/v2/auth/resend_activation_link>
 
 Input:
 
 ```json
 {
     "email": "foo@bar.baz",
-    "activation_url": "https://dashboard.mediacloud.org/activate"
+    "activation_url": "https://dashboard.civicsignal.africa/activate"
 }
 ```
 
@@ -1409,14 +1409,14 @@ After successful send password reset API call, user is sent an email inviting hi
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/send_password_reset_link>
+URL: <https://app.civicsignal.africa/api/v2/auth/send_password_reset_link>
 
 Input:
 
 ```json
 {
     "email": "foo@bar.baz",
-    "password_reset_url": "https://dashboard.mediacloud.org/reset_password"
+    "password_reset_url": "https://dashboard.civicsignal.africa/reset_password"
 }
 ```
 
@@ -1467,7 +1467,7 @@ Output:
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/reset_password>
+URL: <https://app.civicsignal.africa/api/v2/auth/reset_password>
 
 Input:
 
@@ -1532,7 +1532,7 @@ API call is rate-limited.
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/login>
+URL: <https://app.civicsignal.africa/api/v2/auth/login>
 
 Input:
 
@@ -1614,7 +1614,7 @@ Media Cloud currently includes the following authentication roles:
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/profile>
+URL: <https://app.civicsignal.africa/api/v2/auth/profile>
 
 ```json
 {
@@ -1686,7 +1686,7 @@ Asking user to re-enter password and comparing the two values is left to the cli
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/change_password>
+URL: <https://app.civicsignal.africa/api/v2/auth/change_password>
 
 Input:
 
@@ -1739,7 +1739,7 @@ None.
 
 #### Example
 
-URL: <https://api.mediacloud.org/api/v2/auth/reset_api_key>
+URL: <https://app.civicsignal.africa/api/v2/auth/reset_api_key>
 
 Output:
 
@@ -1779,7 +1779,7 @@ Output:
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/stats/list
+URL: https://app.mcivicsignal.africa/api/v2/stats/list
 
 ```json
 {
@@ -1814,7 +1814,7 @@ Detect whether a given block of content is likely to be ap syndicated content by
 
 ### Example
 
-URL: https://api.mediacloud.org/api/v2/util/is_syndicated_ap
+URL: https://app.civicsignal.africa/api/v2/util/is_syndicated_ap
 
 Input:
 
@@ -1846,7 +1846,7 @@ import pkg_resources
 import requests
 assert pkg_resources.get_distribution("requests").version >= '1.2.3'
 
-r = requests.get('https://api.mediacloud.org/api/v2/media/list',
+r = requests.get('https://app.civicsignal.africa/api/v2/media/list',
     params = params,
     headers = { 'Accept': 'application/json'},
     headers = { 'Accept': 'application/json'}
@@ -1864,7 +1864,7 @@ rows  = 1000
 while True:
     params = { 'last_media_id': last_media_id, 'rows': rows, 'key': MY_KEY }
     print "last_media_id:{} rows:{}".format( last_media_id, rows)
-    r = requests.get( 'https://api.mediacloud.org/api/v2/media/list', params = params, headers = { 'Accept': 'application/json'} )
+    r = requests.get( 'https://app.civicsignal.africa/api/v2/media/list', params = params, headers = { 'Accept': 'application/json'} )
     data = r.json()
 
     if len(data) == 0:
@@ -1892,7 +1892,7 @@ with open( '/tmp/media.csv', 'wb') as csvfile:
 This is broken down into multiple steps for convenience and because that's probably how a real user would do it.
 
 The you almost always want to search by a specific media source or media collection.  The easiest way to find a relevant media
-collection is to use our [Sources Tool](https://sources.mediacloud.org).  The URL for a the US Mainstream Media media collection in
+collection is to use our [Sources Tool](https://sources.civicsignal.africa).  The URL for a the US Mainstream Media media collection in
 the sources tool looks like this:
 
 https://sources.mediacloud.org/#media-tag/8875027/details
@@ -1914,7 +1914,7 @@ while True:
     params = { 'last_processed_stories_id': start, 'rows': rows, 'q': 'tags_id_media:8875027', 'key': MY_KEY }
 
     print "Fetching {} stories starting from {}".format( rows, start)
-    r = requests.get( 'https://api.mediacloud.org/api/v2/stories_public/list/', params = params, headers = { 'Accept': 'application/json'} )
+    r = requests.get( 'https://app.civicsignal.africa/api/v2/stories_public/list/', params = params, headers = { 'Accept': 'application/json'} )
     stories = r.json()
 
     if len(stories) == 0:
@@ -1955,7 +1955,7 @@ while True:
     }
 
     print "Fetching {} stories starting from {}".format( rows, start)
-    r = requests.get( 'https://api.mediacloud.org/api/v2/stories_public/list/', params = params, headers = { 'Accept': 'application/json'} )
+    r = requests.get( 'https://app.civicsignal.africa/api/v2/stories_public/list/', params = params, headers = { 'Accept': 'application/json'} )
     stories = r.json()
 
     if len(stories) == 0:
@@ -1979,13 +1979,13 @@ One way to appropriately restrict the data is by setting the `q` parameter to re
 Below `q` is set to `"text:trayvon"` and `fq` is set to `"tags_iud_media:8875027" and "publish_date:[2012-04-01T00:00:00.000Z TO 2013-05-01T00:00:00.000Z]"`. (Note that ":", "[", and "]" are URL encoded.)
 
 ```bash
-curl 'https://api.mediacloud.org/api/v2/wc?q=text:trayvon&fq=tags_iud_media:8875027&fq=publish_date:%5B2012-04-01T00:00:00.000Z+TO+2013-05-01T00:00:00.000Z%5D'
+curl 'https://app.civicsignal.africa/api/v2/wc?q=text:trayvon&fq=tags_iud_media:8875027&fq=publish_date:%5B2012-04-01T00:00:00.000Z+TO+2013-05-01T00:00:00.000Z%5D'
 ```
 
 Alternatively, we could use a single large query by setting `q` to `"text:trayvon AND tags_id_media:8875027 AND publish_date:[2012-04-01T00:00:00.000Z TO 2013-05-01T00:00:00.000Z]"`:
 
 ```bash
-curl 'https://api.mediacloud.org/api/v2/wc?q=text:trayvon+AND+tags_id_media:8875027+AND+publish_date:%5B2012-04-01T00:00:00.000Z+TO+2013-05-01T00:00:00.000Z%5D&fq=tags_id_media:8875027&fq=publish_date:%5B2012-04-01T00:00:00.000Z+TO+2013-05-01T00:00:00.000Z%5D'
+curl 'https://app.civicsignal.africa/api/v2/wc?q=text:trayvon+AND+tags_id_media:8875027+AND+publish_date:%5B2012-04-01T00:00:00.000Z+TO+2013-05-01T00:00:00.000Z%5D&fq=tags_id_media:8875027&fq=publish_date:%5B2012-04-01T00:00:00.000Z+TO+2013-05-01T00:00:00.000Z%5D'
 ```
 
 
@@ -1997,7 +1997,7 @@ curl 'https://api.mediacloud.org/api/v2/wc?q=text:trayvon+AND+tags_id_media:8875
 The user requests a list of all tag sets.
 
 ```bash
-curl https://api.mediacloud.org/api/v2/tag_sets/list
+curl https://app.civicsignal.africa/api/v2/tag_sets/list
 ```
 
 ```json
@@ -2029,7 +2029,7 @@ def find_tags_id( tag_name, tag_sets_id):
     while True:
         params = { 'last_tags_id': last_tags_id, 'rows': rows, 'key': MY_KEY }
         print "start:{} rows:{}".format( start, rows)
-        r = requests.get( 'https://api.mediacloud.org/api/v2/tags/list/' + tag_sets_id , params = params, headers = { 'Accept': 'application/json'} )
+        r = requests.get( 'https://app.civicsignal.africa/api/v2/tags/list/' + tag_sets_id , params = params, headers = { 'Accept': 'application/json'} )
         tags = r.json()
 
         if len(tags) == 0:
@@ -2050,7 +2050,7 @@ Assume that the user determined that the `tags_id` was 12345678 using the above 
 the word count for all sentences in stories belonging to any media source associated with tag 12345678.
 
 ```bash
-curl 'https://api.mediacloud.org/api/v2/wc?q=tags_id_media:12345678'
+curl 'https://app.civicsignal.africa/api/v2/wc?q=tags_id_media:12345678'
 ```
 
 ## Grab stories from 10 January 2014 with the tag `'foo:bar'`
@@ -2076,7 +2076,7 @@ while True:
     params = { 'last_processed_stories_id': start, 'rows': rows, 'q': 'tags_id_stories:678910', 'key': MY_KEY }
 
     print "Fetching {} stories starting from {}".format( rows, start)
-    r = requests.get( 'https://api.mediacloud.org/api/v2/stories_public/list/', params = params, headers = { 'Accept': 'application/json'} )
+    r = requests.get( 'https://app.civicsignal.africa/api/v2/stories_public/list/', params = params, headers = { 'Accept': 'application/json'} )
     stories = r.json()
 
     if len(stories) == 0:
