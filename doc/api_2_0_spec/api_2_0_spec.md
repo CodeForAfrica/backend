@@ -255,7 +255,7 @@ None.
 
 Fetching information on The New York Times
 
-URL: https://app.civicsignal.africa:80/api/v2/media/single/1
+URL: https://app.civicsignal.africa/api/v2/media/single/1
 
 Response:
 
@@ -1280,7 +1280,7 @@ Output:
 
 #### Example
 
-URL: <https://app.mcivicsignal.africa/api/v2/auth/activate>
+URL: <https://app.civicsignal.africa/api/v2/auth/activate>
 
 Input:
 
@@ -1779,7 +1779,7 @@ Output:
 
 ### Example
 
-URL: https://app.mcivicsignal.africa/api/v2/stats/list
+URL: https://app.civicsignal.africa/api/v2/stats/list
 
 ```json
 {
