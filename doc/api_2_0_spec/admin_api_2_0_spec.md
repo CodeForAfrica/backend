@@ -452,7 +452,7 @@ for each tag_set included in the list of tags other than the tags added by this 
 
 ### Example
 
-URL: https://app.civicsignal.africa/aip/v2/stories/put_tags
+URL: https://app.civicsignal.africa/api/v2/stories/put_tags
 
 Input:
 
