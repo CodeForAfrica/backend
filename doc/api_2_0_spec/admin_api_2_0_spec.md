@@ -163,7 +163,7 @@ Media Cloud API 2.0 Spec for a more detailed description of the `q` and `fq` par
 
 The output of these calls is in exactly the same format as for the api/v2/stories/single call.
 
-URL: https://aapp.civicsignal.africag/api/v2/stories/list?last_processed_stories_id=8625915
+URL: https://app.civicsignal.africa/api/v2/stories/list?last_processed_stories_id=8625915
 
 Return a stream of all stories processed by Media Cloud, greater than the `last_processed_stories_id`.
 
