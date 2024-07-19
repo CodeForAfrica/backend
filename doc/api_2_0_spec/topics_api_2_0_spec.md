@@ -218,11 +218,11 @@ data.
 
 All URLs in the topics API are in the form:
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/stories/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/stories/list`
 
 For example, the following will return all stories in the latest snapshot of topic id 1344.
 
-`https://api.mediacloud.org/api/v2/topics/1344/stories/list`
+`https://api.civicsignal.africa/api/v2/topics/1344/stories/list`
 
 ## Snapshots, Timespans, and Foci
 
@@ -298,7 +298,7 @@ For example, the following is a paged response:
 
 After receiving that response, you can use the following URL with no other parameters to fetch the next page of results:
 
-`https://api.mediacloud.org/api/v2/topics/1/stories/list?link_id=789123`
+`https://api.civicsignal.africa/api/v2/topics/1/stories/list?link_id=789123`
 
 When the system has reached the end of the results, it will return an empty list and a null 'next' *link_id*.
 
@@ -329,7 +329,7 @@ represents the set of stories active in a topic within a given date range.  Ever
 
 ## `topics/create` (POST)
 
-`https://api.mediacloud.org/api/v2/topics/create`
+`https://api.civicsignal.africa/api/v2/topics/create`
 
 Create and return a new *topic*.
 
@@ -345,7 +345,7 @@ The topics/create call accepts as input the following fields described in the Ou
 
 Create a new topic:
 
-`https://api.mediacloud.org/api/v2/topics/create`
+`https://api.civicsignal.africa/api/v2/topics/create`
 
 Input:
 
@@ -401,7 +401,7 @@ Response:
 
 ## `topics/<topics_id>/update` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/update`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/update`
 
 Edit an existing *topic*.
 
@@ -425,7 +425,7 @@ Accepts the same input as the topics/create call.
 
 Edit the 'immigration 2015' topic.
 
-`https://api.mediacloud.org/api/v2/topics/1390/update`
+`https://api.civicsignal.africa/api/v2/topics/1390/update`
 
 Input:
 
@@ -468,7 +468,7 @@ Response:
 ```
 ## `topics/info` (GET)
 
-`https://api.mediacloud.org/api/v2/topics/info
+`https://api.civicsignal.africa/api/v2/topics/info
 
 Get a list of modes, sources, and platforms supported by media cloud.
 
@@ -478,7 +478,7 @@ Get a list of modes, sources, and platforms supported by media cloud.
 
 ### Example
 
-`https://api.mediacloud.org/api/v2/topics/info`
+`https://api.civicsignal.africa/api/v2/topics/info`
 
 Nore that the below response is only an example.  The data returned by this call will change over time.
 
@@ -584,7 +584,7 @@ Response:
 
 ## `topics/<topics_id>/add_seed_query` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/add_seed_query`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/add_seed_query`
 
 Add a seed query to an existing topic.  If the same seed querty already exists, do nothing.  Returns the created
 or found seed query.
@@ -608,7 +608,7 @@ To get the list of allowed sources and platforms, see the topics/info end point.
 
 Add a crimson hexagon twitter search:
 
-`https://api.mediacloud.org/api/v2/topics/1390/add_seed_query`
+`https://api.civicsignal.africa/api/v2/topics/1390/add_seed_query`
 
 Input:
 
@@ -638,7 +638,7 @@ Response:
 
 ## `topics/<topics_id>/remove_seed_query` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/remove_seed_query`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/remove_seed_query`
 
 Remove an existing topic seed query.
 
@@ -655,7 +655,7 @@ Remove an existing topic seed query.
 
 Remove a seed query:
 
-`https://api.mediacloud.org/api/v2/topics/1390/remove_seed_query`
+`https://api.civicsignal.africa/api/v2/topics/1390/remove_seed_query`
 
 Input:
 
@@ -673,7 +673,7 @@ Response:
 
 ## topics/<topics_id>/reset (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/~topics_id~/reset`
+`https://api.civicsignal.africa/api/v2/topics/~topics_id~/reset`
 
 Delete all existing stories, links, and seed urls from an existing *topic*.  Set the topic state to
 'created but not queued' and the message to null.
@@ -696,7 +696,7 @@ This call will return an error if it is run on a *topic* with a state of 'runnin
 
 Reset the 'immigration 2015' topic.
 
-`https://api.mediacloud.org/api/v2/topics/1390/reset`
+`https://api.civicsignal.africa/api/v2/topics/1390/reset`
 
 Response:
 
@@ -708,7 +708,7 @@ Response:
 
 ## `topics/<topics_id>/spider` (POST)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/spider`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/spider`
 
 Start a topic spidering job.
 
@@ -733,7 +733,7 @@ The call returns a `job_state` record with information about the state of the qu
 
 Start a topic spider for the 'U.S. 2016 Election' topic:
 
-`https://api.mediacloud.org/api/v2/topics/1404/spider`
+`https://api.civicsignal.africa/api/v2/topics/1404/spider`
 
 Input:
 
@@ -762,7 +762,7 @@ Response:
 
 ## `topics/<topics_id>/spider_status`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/spider_status`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/spider_status`
 
 Get a list all spidering jobs started for this topic.
 
@@ -784,7 +784,7 @@ Get a list all spidering jobs started for this topic.
 
 ### Example
 
-`https://api.mediacloud.org/api/v2/topics/1404/spider_status`
+`https://api.civicsignal.africa/api/v2/topics/1404/spider_status`
 
 Response:
 
@@ -805,7 +805,7 @@ Response:
 
 ## `topics/list`
 
-`https://api.mediacloud.org/api/v2/topics/list`
+`https://api.civicsignal.africa/api/v2/topics/list`
 
 The topics/list call returns a simple list of topics available in Media Cloud.  The call will only return topics for
 which the calling user has read or higher permissions.
@@ -850,7 +850,7 @@ Standard parameters accepted: link_id.
 
 Fetch all topics in Media Cloud:
 
-`https://api.mediacloud.org/api/v2/topics/list`
+`https://api.civicsignal.africa/api/v2/topics/list`
 
 Response:
 
@@ -922,7 +922,7 @@ Response:
 
 ## `topics/single/<topics_id>`
 
-`https://api.mediacloud.org/api/v2/topics/single/<topics_id>`
+`https://api.civicsignal.africa/api/v2/topics/single/<topics_id>`
 
 The topics/single call returns a single topic, if the calling user has permission to read that topic.
 
@@ -938,7 +938,7 @@ The topics/single call returns a single topic, if the calling user has permissio
 
 Fetch a single topic:
 
-`https://api.mediacloud.org/api/v2/topics/single/672`
+`https://api.civicsignal.africa/api/v2/topics/single/672`
 
 Response:
 
@@ -978,7 +978,7 @@ Response:
 
 ## `topics/<topics_id>/list_timespan_files`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/list_timespan_files`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/list_timespan_files`
 
 List all timespan\_files associated with the given timespan.  Timespan files are dumps made by the spider
 during the snapshotting process.
@@ -997,7 +997,7 @@ during the snapshotting process.
 
 ### Example
 
-`https://api.mediacloud.org/api/v2/topics/123/list_timespan_files`
+`https://api.civicsignal.africa/api/v2/topics/123/list_timespan_files`
 
 Response:
 
@@ -1015,7 +1015,7 @@ Response:
 
 ## `topics/<topics_id>/list_snapshot_files`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/list_snapshot_files`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/list_snapshot_files`
 
 List all snapshot\_files associated with the given snapshot.  Snapshot files are dumps made by the spider
 during the snapshotting process. Snapshot files are only accessible by users with admin access.
@@ -1034,7 +1034,7 @@ during the snapshotting process. Snapshot files are only accessible by users wit
 
 ### Example
 
-`https://api.mediacloud.org/api/v2/topics/123/list_snapshot_files`
+`https://api.civicsignal.africa/api/v2/topics/123/list_snapshot_files`
 
 Response:
 
@@ -1056,7 +1056,7 @@ Response:
 
 ## `topics/permissions/user/list`
 
-`https://api.mediacloud.org/api/v2/topics/permissions/user/list`
+`https://api.civicsignal.africa/api/v2/topics/permissions/user/list`
 
 List all permissions assigned to the authenticated user for all topics.  This list includes only permissions granted specifically to this user.  Topics available for reading through the 'public' flag are not included in this list.
 
@@ -1076,7 +1076,7 @@ List all permissions assigned to the authenticated user for all topics.  This li
 
 List all permissions belonging to the authenticated user:
 
-`https://api.mediacloud.org/api/v2/topics/permissions/user/list`
+`https://api.civicsignal.africa/api/v2/topics/permissions/user/list`
 
 Response:
 
@@ -1095,7 +1095,7 @@ Response:
 
 ## `topics/<topics_id>/permissions/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/permissions/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/permissions/list`
 
 List all permissions for the given topic.
 
@@ -1111,7 +1111,7 @@ List all permissions for the given topic.
 
 List all permissions belonging to the given topic:
 
-`https://api.mediacloud.org/api/v2/topics/1394/permissions/list`
+`https://api.civicsignal.africa/api/v2/topics/1394/permissions/list`
 
 Response:
 
@@ -1136,7 +1136,7 @@ Response:
 
 ## `topics/<topics_id>/permissions/update` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/permissions/update`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/permissions/update`
 
 Update permissions for a given user to a given topic.
 
@@ -1161,7 +1161,7 @@ On success, the new permission is returned in the same format as the permissions
 
 Update the permissions for a given user for a given topic:
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/permissions/update`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/permissions/update`
 
 Input:
 
@@ -1195,7 +1195,7 @@ Response:
 
 ## `stories/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/stories/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/stories/list`
 
 The stories list call returns stories in the topic.
 
@@ -1246,7 +1246,7 @@ Standard parameters accepted: snapshots_id, foci_id, timespans_id, limit, link_i
 
 Fetch all stories in topic id 1344:
 
-`https://api.mediacloud.org/api/v2/topics/1344/stories/list`
+`https://api.civicsignal.africa/api/v2/topics/1344/stories/list`
 
 Response:
 
@@ -1287,7 +1287,7 @@ Response:
 
 ## `stories/links`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/stories/links`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/stories/links`
 
 Return all links between individual stories across media within the given topic.
 
@@ -1306,7 +1306,7 @@ Standard parameters accepted : snapshots_id, foci_id, timespans_id, limit.
 
 Return links for topic 1404:
 
-`https://api.mediacloud.org/api/v2/topics/1404/stories/links?limit=3`
+`https://api.civicsignal.africa/api/v2/topics/1404/stories/links?limit=3`
 
 Response:
 
@@ -1335,7 +1335,7 @@ Response:
 
 ## `stories/facebook`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/stories/facebook`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/stories/facebook`
 
 Return the current facebook counts for all stories in the topic.  Note that this call returns the current
 facebook count data, which may change over time, rather than the snapshotted, static data returned by the
@@ -1358,7 +1358,7 @@ Standard parameters accepted : snapshots_id, foci_id, timespans_id, limit.
 
 Return the facebook counts for 3 stories in the given topic.
 
-`https://api.mediacloud.org/api/v2/topics/1404/stories/facebook?limit=3`
+`https://api.civicsignal.africa/api/v2/topics/1404/stories/facebook?limit=3`
 
 Response:
 
@@ -1393,7 +1393,7 @@ Response:
 
 ## `stories/count`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/stories/count`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/stories/count`
 
 Return the number of stories that match the query.
 
@@ -1417,7 +1417,7 @@ Standard parameters accepted : snapshots_id, foci_id, timespans_id, limit.
 
 Return the number of stories that mention 'immigration' in the 'US Election' topic:
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/stories/count?q=immigration`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/stories/count?q=immigration`
 
 Response:
 
@@ -1430,7 +1430,7 @@ Response:
 
 ## `sentences/count`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/sentences/count`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/sentences/count`
 
 Return the numer of sentences that match the query, optionally split by date.
 
@@ -1445,7 +1445,7 @@ For details about this end point, including parameters, output, and examples, se
 
 ## `media/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/media/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/media/list`
 
 The media list call returns the list of media in the topic.
 
@@ -1488,7 +1488,7 @@ Standard parameters accepted: snapshots_id, foci_id, timespans_id, limit, link_i
 
 Return all stories in the medium that match 'twitt':
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/media/list?name=twitt`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/media/list?name=twitt`
 
 Response:
 
@@ -1531,7 +1531,7 @@ Response:
 
 ## `media/links`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/media/links`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/media/links`
 
 Return all links between individual media within the given topic.
 
@@ -1550,7 +1550,7 @@ Standard parameters accepted : snapshots_id, foci_id, timespans_id, limit.
 
 Return links for topic 1404:
 
-`https://api.mediacloud.org/api/v2/topics/1404/media/links?limit=3`
+`https://api.civicsignal.africa/api/v2/topics/1404/media/links?limit=3`
 
 Response:
 
@@ -1579,7 +1579,7 @@ Response:
 
 ## `media/map`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/media/map`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/media/map`
 
 The media list call returns a gexf formatted network map of the media in the topic / timespan.
 
@@ -1609,12 +1609,12 @@ https://gephi.org/gexf/format/
 
 Return the network map for topic id 12:
 
-`https://api.mediacloud.org/api/v2/topics/12/media/map`
+`https://api.civicsignal.africa/api/v2/topics/12/media/map`
 
 
 ## `media/list_maps`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/media/list_maps`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/media/list_maps`
 
 Return a list of maps available within the timespan.
 
@@ -1626,14 +1626,14 @@ None.
 
 Return the network map for topic id 12:
 
-`https://api.mediacloud.org/api/v2/topics/12/media/list_maps`
+`https://api.civicsignal.africa/api/v2/topics/12/media/list_maps`
 
 
 # Word Counts
 
 ## `wc/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/wc/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/wc/list`
 
 Returns sampled counts of the most prevalent words in a topic, optionally restricted to sentences that match a given query.
 
@@ -1672,7 +1672,7 @@ The Boolean Query focal technique associates a focus with a story by matching th
 
 ## `focal_set_definitions/create` (POST)
 
-`https://api.mediacloud.org/api/topics/<topics_id>/focal_set_definitions/create`
+`https://api.civicsignal.africa/api/topics/<topics_id>/focal_set_definitions/create`
 
 Create and return a new *focal set definiition*  within the given *topic*.
 
@@ -1692,7 +1692,7 @@ Create and return a new *focal set definiition*  within the given *topic*.
 
 Create a 'Candidates' focal set definition in the 'U.S. 2016 Election' topic:
 
-`https://api.mediacloud.org/api/v2/topics/1344/focal_set_definitions/create`
+`https://api.civicsignal.africa/api/v2/topics/1344/focal_set_definitions/create`
 
 Input:
 
@@ -1723,7 +1723,7 @@ Response:
 
 ## `focal_set_definitions/<focal_set_definitions_id>/update` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focal_set_definitions/<focal_set_definitions_id>/update/`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focal_set_definitions/<focal_set_definitions_id>/update/`
 
 Update the given focal set definition.
 
@@ -1739,7 +1739,7 @@ See *focal_set_definitions/create* for a list of fields.  Only fields that are i
 
 Update the name and description of the 'Candidates'  focal set"definition":
 
-`https://api.mediacloud.org/api/v2/topics/1344/focal_set_definitions/789/update`
+`https://api.civicsignal.africa/api/v2/topics/1344/focal_set_definitions/789/update`
 
 Input:
 
@@ -1770,7 +1770,7 @@ Response:
 
 ## `focal_set_definitions/<focal_set_definitions_id>/delete` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focal_set_definitions/<focal_set_definitions_id>/delete`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focal_set_definitions/<focal_set_definitions_id>/delete`
 
 Delete a focal set definition.
 
@@ -1788,7 +1788,7 @@ Delete a focal set definition.
 
 Delete focal_set_definitions_id 123:
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focal_set_definitions/123/delete`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focal_set_definitions/123/delete`
 
 Response:
 
@@ -1798,7 +1798,7 @@ Response:
 
 ## `focal_set_definitions/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focal_set_definitions/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focal_set_definitions/list`
 
 Return a list of all focal set definitions belonging to the given topic.
 
@@ -1821,7 +1821,7 @@ Return a list of all focal set definitions belonging to the given topic.
 
 List all focal set definitions associated with the 'U.S. 2016 Elections'"topic":
 
-`https://api.mediacloud.org/api/v2/topics/1344/focal_set_definitions/list`
+`https://api.civicsignal.africa/api/v2/topics/1344/focal_set_definitions/list`
 
 Response:
 
@@ -1853,7 +1853,7 @@ Response:
 
 ## `focal_sets/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focal_sets/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focal_sets/list`
 
 List all *focal sets* belonging to the specified *snapshot* in the given *topic*.
 
@@ -1878,7 +1878,7 @@ If no snapshots_id is specified, the latest snapshot will be used.  If foci_id o
 
 Get a list of *focal sets* in the latest *snapshot* in the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/focal_sets_list`
+`https://api.civicsignal.africa/api/v2/topics/1344/focal_sets_list`
 
 Response:
 
@@ -1910,7 +1910,7 @@ Response:
 
 ## `focus_definitions/create` (POST)
 
-`https://api.mediacloud.org/api/topics/<topics_id>/focus_definitions/create`
+`https://api.civicsignal.africa/api/topics/<topics_id>/focus_definitions/create`
 
 Create and return a new *focus definition*  within the given *topic* and *focal set definition*.
 
@@ -1933,7 +1933,7 @@ The input for the *focus definition* depends on the focal technique of the paren
 
 Create the 'Clinton' *focus definition* within the 'Candidates' *focal set definition* and the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/focus_definitions/create`
+`https://api.civicsignal.africa/api/v2/topics/1344/focus_definitions/create`
 
 Input:
 
@@ -1966,7 +1966,7 @@ Response:
 
 ## `focus_definitions/<focus_definitions_id>/update` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focus_definitions/<focus_definitions_id>/update`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focus_definitions/<focus_definitions_id>/update`
 
 Update the given focus definition.
 
@@ -1982,7 +1982,7 @@ See *focus_definitions/create* for a list of fields.  Only fields that are inclu
 
 Update the query for the 'Clinton' focus definition:
 
-`https://api.mediacloud.org/api/v2/topics/1344/focus_definitions/234/update`
+`https://api.civicsignal.africa/api/v2/topics/1344/focus_definitions/234/update`
 
 Input:
 
@@ -2008,7 +2008,7 @@ Response:
 
 ## `focus_definitions/<focus_definitions_id>/delete` (PUT)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focus_definitions/<focus_definitions_id>/delete`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focus_definitions/<focus_definitions_id>/delete`
 
 Delete a focus definition.
 
@@ -2026,7 +2026,7 @@ Delete a focus definition.
 
 Delete focus_definitions_id 123:
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focus_definitions/123/delete`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focus_definitions/123/delete`
 
 Response:
 
@@ -2036,7 +2036,7 @@ Response:
 
 ## `focus_definitions/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/focus_definitions/<focal_set_definitions_id>/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/focus_definitions/<focal_set_definitions_id>/list`
 
 List all *focus definitions* belonging to the given *focal set definition*.
 
@@ -2062,7 +2062,7 @@ method specific fields are listed last in the table above and are prefixed with 
 
 List all *focus definitions* belonging to the 'Candidates' *focal set definition* of the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/focus_definitions/234/list`
+`https://api.civicsignal.africa/api/v2/topics/1344/focus_definitions/234/list`
 
 Response:
 
@@ -2082,7 +2082,7 @@ Response:
 
 ## `foci/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/foci/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/foci/list`
 
 Return a list of the *foci* belonging to the given *focal set*.
 
@@ -2107,7 +2107,7 @@ The output for *focus* depends on the focal technique of the parent *focus defin
 
 Get a list of *foci* wihin the 'Candiates' *focal set* of the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/foci/list?focal_sets_id=234`
+`https://api.civicsignal.africa/api/v2/topics/1344/foci/list?focal_sets_id=234`
 
 Response:
 
@@ -2131,7 +2131,7 @@ Each *snapshot* contains a static copy of all data within a topic at the time th
 
 ## `snapshots/create` (POST)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/snapshots/create`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/snapshots/create`
 
 Create a new but empty snapshot for the topic.  This call only creates an empty shell of a snapshot.  To fill it with
 data, you must pass the returned snapshots\_id to snapshots/generate or topic/spider.
@@ -2154,7 +2154,7 @@ Returns the created snapshot, as in the example below.
 
 Create a new snapshot for the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/snapshots/create`
+`https://api.civicsignal.africa/api/v2/topics/1344/snapshots/create`
 
 Response:
 
@@ -2170,7 +2170,7 @@ Response:
 
 ## `snapshots/generate` (POST)
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/snapshots/generate`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/snapshots/generate`
 
 Generate a new *snapshot* for the given topic.  Note that `topics/spider` will generate a snapshot as part of its
 spidering process, so this end point only needs to be called to generate an additional snapshot of a topic
@@ -2199,7 +2199,7 @@ This command will return a job_state object as described in the `snapshots/gener
 
 Start a new *snapshot* generation job for the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/snapshots/generate`
+`https://api.civicsignal.africa/api/v2/topics/1344/snapshots/generate`
 
 Response:
 
@@ -2218,7 +2218,7 @@ Response:
 
 ## `snapshots/generate_status`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/snapshots/generate_status`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/snapshots/generate_status`
 
 Return a list of snapshots job_states for the given snapshot;
 
@@ -2245,7 +2245,7 @@ Return a list of snapshots job_states for the given snapshot;
 
 List snapshot jobs for the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/snapshots/generate_status`
+`https://api.civicsignal.africa/api/v2/topics/1344/snapshots/generate_status`
 
 Response:
 
@@ -2265,7 +2265,7 @@ Response:
 
 ## `snapshots/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/snapshots/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/snapshots/list`
 
 Return a list of all completed *snapshots* in the given *topic*.
 
@@ -2296,7 +2296,7 @@ few minutes up to a few hours.  The 'searchable' field is set to true once that 
 
 Return a list of *snapshots* in the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/snapshots/list`
+`https://api.civicsignal.africa/api/v2/topics/1344/snapshots/list`
 
 Response:
 
@@ -2418,7 +2418,7 @@ word_vectors = gensim.models.KeyedVectors.load_word2vec_format('model.bin', bina
 
 ### Example
 
-URL: <https://api.mediacloud.org/api/v2/topics/6/snapshots/1/word2vec_model/1>
+URL: <https://api.civicsignal.africa/api/v2/topics/6/snapshots/1/word2vec_model/1>
 
 Output: `application/octet-stream` model data of topic with `topics_id=6`, snapshot with `snapshots_id=1`, word2vec model with `models_id=1`.
 
@@ -2431,7 +2431,7 @@ A *story* is included within a *timespan* if the publish_date of the story is wi
 
 ## `timespans/list`
 
-`https://api.mediacloud.org/api/v2/topics/<topics_id>/timespans/list`
+`https://api.civicsignal.africa/api/v2/topics/<topics_id>/timespans/list`
 
 Return a list of timespans in the current snapshot.
 
@@ -2470,7 +2470,7 @@ Media Cloud needs to guess the date of many of the stories discovered while topi
 
 Return all *timespans* associated with the latest *snapshot* of the 'U.S. 2016 Election' *topic*:
 
-`https://api.mediacloud.org/api/v2/topics/1344/timespans/list`
+`https://api.civicsignal.africa/api/v2/topics/1344/timespans/list`
 
 Response:
 

@@ -2113,7 +2113,7 @@ services:
             # Public HTTP port
             # (SSL is done by Nginx running on bastion host)
             # MAKE SURE to BLOCK THIS PORT in provision/roles/docker/tasks/iptables.yml
-            - "8082:80"
+            - "80:80"
         volumes:
             # Shared with "cron_generate_daily_rss_dumps" container:
             - vol_daily_rss_dumps:/mediacloud_webapp_static/static/rss_dumps/
