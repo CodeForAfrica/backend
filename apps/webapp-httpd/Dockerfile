@@ -2,7 +2,7 @@
 # Webapp (HTTP server)
 #
 
-FROM gcr.io/mcback/nginx-base:latest
+FROM codeforafrica/cs-nginx-base
 
 # Copy configuration
 COPY nginx/include/webapp-httpd.conf /etc/nginx/include/
