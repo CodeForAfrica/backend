@@ -2,13 +2,13 @@
 # Proxy to NYTLabels annotator, roundrobins between nytlabels-annotator instances
 #
 
-FROM gcr.io/mcback/nginx-base:latest
+FROM codeforafrica/cs-nginx-base
 
 # Copy configuration
 COPY nginx/include/nytlabels-annotator-webapp-proxy.conf /etc/nginx/include/
 
 # Web server's port
-EXPOSE 8080
+EXPOSE 80
 
 # Run Nginx
 CMD ["nginx"]

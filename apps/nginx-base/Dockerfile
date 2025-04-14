@@ -2,7 +2,7 @@
 # Base image for Nginx
 #
 
-FROM gcr.io/mcback/base:latest
+FROM codeforafrica/cs-base:latest
 
 # Install packages
 RUN \
