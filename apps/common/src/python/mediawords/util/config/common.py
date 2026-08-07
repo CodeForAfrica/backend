@@ -1,12 +1,28 @@
 import collections
 import re
 from typing import List, Pattern, Optional
+from urllib.parse import urlparse, ParseResult
 
 from mediawords.util.config import env_value, McConfigException
 from mediawords.util.parse_json import decode_json, McDecodeJSONException
 from mediawords.util.log import create_logger
 
 log = create_logger(__name__)
+
+
+def _url_from_env(name: str) -> Optional[ParseResult]:
+    """Parse a URL out of an optional env var, or return None if it's unset."""
+    value = env_value(name, required=False, allow_empty_string=True)
+    if not value:
+        return None
+    return urlparse(value)
+
+
+def _url_attr(env_name: str, attr: str, default):
+    """Return one attribute (e.g. "hostname", "port") of the URL in an optional env var, or a default."""
+    url = _url_from_env(env_name)
+    value = getattr(url, attr, None) if url else None
+    return value or default
 
 
 class ConnectRetriesConfig(object):
@@ -27,34 +43,41 @@ class ConnectRetriesConfig(object):
 
 
 class DatabaseConfig(object):
-    """PostgreSQL database configuration."""
+    """PostgreSQL database configuration.
+
+    Reads a single "postgresql://user:password@host:port/database" URL from
+    MC_DATABASE_URL when set (e.g. an external/managed Postgres on AWS), and
+    otherwise falls back to the local docker-compose Postgres/pgbouncer.
+    """
 
     @staticmethod
     def hostname() -> str:
         """Hostname."""
         # Container's name from docker-compose.yml
-        return "postgresql-pgbouncer"
+        return _url_attr('MC_DATABASE_URL', 'hostname', "postgresql-pgbouncer")
 
     @staticmethod
     def port() -> int:
         """Port."""
         # Container's exposed port from docker-compose.yml
-        return 6432
+        return _url_attr('MC_DATABASE_URL', 'port', 6432)
 
     @staticmethod
     def database_name() -> str:
         """Database name."""
-        return "mediacloud"
+        url = _url_from_env('MC_DATABASE_URL')
+        name = url.path.lstrip('/') if url else None
+        return name if name else "mediacloud"
 
     @staticmethod
     def username() -> str:
         """Username."""
-        return "mediacloud"
+        return _url_attr('MC_DATABASE_URL', 'username', "mediacloud")
 
     @staticmethod
     def password() -> str:
         """Password."""
-        return "mediacloud"
+        return _url_attr('MC_DATABASE_URL', 'password', "mediacloud")
 
     @staticmethod
     def retries() -> ConnectRetriesConfig:
@@ -87,34 +110,42 @@ class AmazonS3DownloadsConfig(object):
 
 
 class RabbitMQConfig(object):
-    """RabbitMQ (Celery broker) client configuration."""
+    """RabbitMQ (Celery broker) client configuration.
+
+    Reads a single "amqp://user:password@host:port/<vhost>" URL from
+    MC_RABBITMQ_URL when set, and otherwise falls back to the local
+    docker-compose RabbitMQ server. Because the default vhost name itself
+    starts with a slash ("/mediacloud"), the URL path ends up with a double
+    slash (".../mediacloud") -- that's expected, not a typo.
+    """
 
     @staticmethod
     def hostname() -> str:
         """Hostname."""
         # Container's name from docker-compose.yml
-        return "rabbitmq-server"
+        return _url_attr('MC_RABBITMQ_URL', 'hostname', "rabbitmq-server")
 
     @staticmethod
     def port() -> int:
         """Port."""
         # Container's exposed port from docker-compose.yml
-        return 5672
+        return _url_attr('MC_RABBITMQ_URL', 'port', 5672)
 
     @staticmethod
     def username() -> str:
         """Username."""
-        return "mediacloud"
+        return _url_attr('MC_RABBITMQ_URL', 'username', "mediacloud")
 
     @staticmethod
     def password() -> str:
         """Password."""
-        return "mediacloud"
+        return _url_attr('MC_RABBITMQ_URL', 'password', "mediacloud")
 
     @staticmethod
     def vhost() -> str:
         """Virtual host."""
-        return "/mediacloud"
+        url = _url_from_env('MC_RABBITMQ_URL')
+        return url.path[1:] if url and url.path else "/mediacloud"
 
     @staticmethod
     def timeout() -> int:
@@ -384,7 +415,9 @@ class CommonConfig(object):
     def solr_url() -> str:
         """Solr server URL."""
         # "solr-shard-01" container's name from docker-compose.yml
-        url = 'http://solr-shard-01:8983/solr'
+        url = env_value('MC_SOLR_URL', required=False, allow_empty_string=True)
+        if not url:
+            url = 'http://solr-shard-01:8983/solr'
 
         # Solr doesn't like extra slashes apparently
         url = re.sub(r'/+$', '', url)
@@ -395,4 +428,5 @@ class CommonConfig(object):
     def extractor_api_url() -> str:
         """URL of the extractor API."""
         # "extract-article-from-page" container's name from docker-compose.yml; will round-robin between servers
-        return "http://extract-article-from-page:8080/extract"
+        url = env_value('MC_EXTRACTOR_API_URL', required=False, allow_empty_string=True)
+        return url if url else "http://extract-article-from-page:8080/extract"
