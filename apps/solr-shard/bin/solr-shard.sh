@@ -23,8 +23,8 @@ if grep -qs /var/lib/solr /proc/mounts; then
 fi
 
 # Container's name from docker-compose.yml by default; override when
-# solr-zookeeper isn't reachable under that literal name (e.g. colocated in
-# the same task on AWS, where it's reachable via "localhost" instead).
+# solr-zookeeper isn't reachable under that literal name (e.g. grouped with
+# it in the same task on AWS, where it's reachable via "localhost" instead).
 MC_SOLR_ZOOKEEPER_HOST="${MC_SOLR_ZOOKEEPER_HOST:-solr-zookeeper}"
 MC_SOLR_ZOOKEEPER_PORT=2181
 MC_SOLR_PORT=8983

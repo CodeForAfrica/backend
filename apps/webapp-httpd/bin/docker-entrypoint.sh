@@ -3,7 +3,7 @@
 set -e
 
 # "webapp-api:9090" is the container's name from docker-compose.yml; override
-# with "localhost:9090" when webapp-httpd and webapp-api are colocated in the
+# with "localhost:9090" when webapp-httpd and webapp-api are grouped in the
 # same task (e.g. on AWS) instead of running as separate containers.
 : "${MC_WEBAPP_API_UPSTREAM:=webapp-api:9090}"
 
