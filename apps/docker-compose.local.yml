@@ -1,0 +1,122 @@
+#
+# Minimal local dev stack: Postgres + RabbitMQ + Solr + web app.
+# Run with: docker compose -f docker-compose.local.yml up
+#
+# Skips mail servers and crawler/extractor workers -- tagging and crawling
+# won't work, but login, browsing, and search will.
+#
+version: "3.7"
+
+x-common-configuration: &common-configuration
+    MC_DOWNLOADS_STORAGE_LOCATIONS: "postgresql"
+    MC_DOWNLOADS_READ_ALL_FROM_S3: "0"
+    MC_DOWNLOADS_FALLBACK_POSTGRESQL_TO_S3: "0"
+    MC_DOWNLOADS_CACHE_S3: "0"
+    MC_PUBLIC_AMAZON_S3_ACCESS_KEY_ID: ""
+    MC_PUBLIC_AMAZON_S3_SECRET_ACCESS_KEY: ""
+    MC_PUBLIC_AMAZON_S3_BUCKET_NAME: ""
+    MC_PUBLIC_STORE_TYPE: "postgresql"
+    MC_PUBLIC_STORE_SALT: "local-dev-salt"
+    MC_PUBLIC_AMAZON_S3_DIRECTORY_NAME: "development"
+    MC_EMAIL_FROM_ADDRESS: "info@localhost"
+    MC_EMAIL_UNSUBSCRIBE: "support@localhost"
+    MC_USERAGENT_BLACKLIST_URL_PATTERN: ""
+    MC_USERAGENT_AUTHENTICATED_DOMAINS: '[]'
+    MC_USERAGENT_PARALLEL_GET_NUM_PARALLEL: "10"
+    MC_USERAGENT_PARALLEL_GET_TIMEOUT: "10"
+    MC_USERAGENT_PARALLEL_GET_PER_DOMAIN_TIMEOUT: "1"
+    MC_TOPICS_BASE_TOPIC_ALERT_EMAILS: ""
+    # Same values the app would otherwise hardcode -- proves the env-var
+    # plumbing round-trips correctly before wiring in real AWS-hosted URLs.
+    MC_DATABASE_URL: "postgresql://mediacloud:mediacloud@postgresql-pgbouncer:6432/mediacloud"
+    MC_RABBITMQ_URL: "amqp://mediacloud:mediacloud@rabbitmq-server:5672//mediacloud"
+    MC_SOLR_URL: "http://solr-shard-01:8983/solr"
+
+services:
+
+    postgresql-server:
+        image: codeforafrica/cs-postgresql-server:release
+        init: true
+        expose:
+            - "5432"
+        ports:
+            - "54320:5432"
+        stop_grace_period: 1m
+        volumes:
+            - vol_postgresql_data:/var/lib/postgresql/
+
+    postgresql-pgbouncer:
+        image: codeforafrica/cs-postgresql-pgbouncer:release
+        init: true
+        depends_on:
+            - postgresql-server
+        expose:
+            - "6432"
+
+    rabbitmq-server:
+        image: codeforafrica/cs-rabbitmq-server:release
+        init: true
+        expose:
+            - "5672"
+            - "15672"
+        volumes:
+            - vol_rabbitmq_data:/var/lib/rabbitmq/
+
+    webapp-api:
+        image: codeforafrica/cs-webapp-api:release
+        init: true
+        environment:
+            <<: *common-configuration
+        depends_on:
+            - postgresql-pgbouncer
+            - rabbitmq-server
+            - solr-shard-01
+        expose:
+            - "9090"
+
+    webapp-httpd:
+        image: codeforafrica/cs-webapp-httpd:release
+        init: true
+        depends_on:
+            - webapp-api
+        ports:
+            - "8082:80"
+
+    solr-zookeeper:
+        image: codeforafrica/cs-solr-zookeeper:release
+        init: true
+        expose:
+            - "2181"
+            - "2888"
+            - "3888"
+
+    # webapp-api hardcodes "solr-shard-01" as the Solr host, so only one
+    # shard is needed locally.
+    solr-shard-01:
+        image: codeforafrica/cs-solr-shard:release
+        init: true
+        environment:
+            MC_SOLR_SHARD_COUNT: "1"
+        depends_on:
+            - solr-zookeeper
+        expose:
+            - "8983"
+        ports:
+            - "8983:8983"
+        volumes:
+            - vol_solr_shard_data_01:/var/lib/solr/
+
+    # Syncs stories from PostgreSQL into Solr so search results aren't empty.
+    import-solr-data:
+        image: codeforafrica/cs-import-solr-data:release
+        init: true
+        environment:
+            <<: *common-configuration
+        depends_on:
+            - postgresql-pgbouncer
+            - solr-shard-01
+
+volumes:
+    vol_postgresql_data:
+    vol_rabbitmq_data:
+    vol_solr_shard_data_01:
