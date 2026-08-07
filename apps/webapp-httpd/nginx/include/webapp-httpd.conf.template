@@ -4,7 +4,7 @@ server {
 
     location / {
 
-        set             $upstream   webapp-api:9090;
+        set             $upstream   __MC_WEBAPP_API_UPSTREAM__;
         fastcgi_pass    $upstream;
 
         fastcgi_read_timeout    600s;
