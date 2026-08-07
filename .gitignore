@@ -129,3 +129,8 @@ mediawords*.yml
 test*.log
 
 /volumes/
+
+# Personal-machine overrides -- never committed. apps/docker-compose.minimal.yml
+# is the shared, checked-in minimal dev stack; anything named *.local.yml is
+# assumed to be a developer's own untracked override.
+apps/docker-compose.local.yml

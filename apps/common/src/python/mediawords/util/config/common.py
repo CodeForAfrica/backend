@@ -18,6 +18,13 @@ def _url_from_env(name: str) -> Optional[ParseResult]:
     return urlparse(value)
 
 
+def _url_attr(env_name: str, attr: str, default):
+    """Return one attribute (e.g. "hostname", "port") of the URL in an optional env var, or a default."""
+    url = _url_from_env(env_name)
+    value = getattr(url, attr, None) if url else None
+    return value if value else default
+
+
 class ConnectRetriesConfig(object):
     """Connect retries configuration."""
 
@@ -46,16 +53,14 @@ class DatabaseConfig(object):
     @staticmethod
     def hostname() -> str:
         """Hostname."""
-        url = _url_from_env('MC_DATABASE_URL')
         # Container's name from docker-compose.yml
-        return url.hostname if url else "postgresql-pgbouncer"
+        return _url_attr('MC_DATABASE_URL', 'hostname', "postgresql-pgbouncer")
 
     @staticmethod
     def port() -> int:
         """Port."""
-        url = _url_from_env('MC_DATABASE_URL')
         # Container's exposed port from docker-compose.yml
-        return url.port if url and url.port else 6432
+        return _url_attr('MC_DATABASE_URL', 'port', 6432)
 
     @staticmethod
     def database_name() -> str:
@@ -67,14 +72,12 @@ class DatabaseConfig(object):
     @staticmethod
     def username() -> str:
         """Username."""
-        url = _url_from_env('MC_DATABASE_URL')
-        return url.username if url and url.username else "mediacloud"
+        return _url_attr('MC_DATABASE_URL', 'username', "mediacloud")
 
     @staticmethod
     def password() -> str:
         """Password."""
-        url = _url_from_env('MC_DATABASE_URL')
-        return url.password if url and url.password else "mediacloud"
+        return _url_attr('MC_DATABASE_URL', 'password', "mediacloud")
 
     @staticmethod
     def retries() -> ConnectRetriesConfig:
@@ -119,28 +122,24 @@ class RabbitMQConfig(object):
     @staticmethod
     def hostname() -> str:
         """Hostname."""
-        url = _url_from_env('MC_RABBITMQ_URL')
         # Container's name from docker-compose.yml
-        return url.hostname if url else "rabbitmq-server"
+        return _url_attr('MC_RABBITMQ_URL', 'hostname', "rabbitmq-server")
 
     @staticmethod
     def port() -> int:
         """Port."""
-        url = _url_from_env('MC_RABBITMQ_URL')
         # Container's exposed port from docker-compose.yml
-        return url.port if url and url.port else 5672
+        return _url_attr('MC_RABBITMQ_URL', 'port', 5672)
 
     @staticmethod
     def username() -> str:
         """Username."""
-        url = _url_from_env('MC_RABBITMQ_URL')
-        return url.username if url and url.username else "mediacloud"
+        return _url_attr('MC_RABBITMQ_URL', 'username', "mediacloud")
 
     @staticmethod
     def password() -> str:
         """Password."""
-        url = _url_from_env('MC_RABBITMQ_URL')
-        return url.password if url and url.password else "mediacloud"
+        return _url_attr('MC_RABBITMQ_URL', 'password', "mediacloud")
 
     @staticmethod
     def vhost() -> str:
