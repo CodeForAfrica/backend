@@ -22,7 +22,7 @@ def _url_attr(env_name: str, attr: str, default):
     """Return one attribute (e.g. "hostname", "port") of the URL in an optional env var, or a default."""
     url = _url_from_env(env_name)
     value = getattr(url, attr, None) if url else None
-    return value if value else default
+    return value or default
 
 
 class ConnectRetriesConfig(object):
