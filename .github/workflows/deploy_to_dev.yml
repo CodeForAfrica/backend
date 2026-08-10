@@ -1,0 +1,189 @@
+name: deploy_to_dev
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  resolve_infra:
+    runs-on: ${{ fromJSON(vars.CFA_RUNNER_LABELS || '["ubuntu-24.04"]') }}
+    outputs:
+      app-url: ${{ steps.resolve.outputs.app-url }}
+      aws-region: ${{ steps.resolve.outputs.aws-region }}
+      aws-role-to-assume: ${{ steps.resolve.outputs.aws-role-to-assume }}
+      ecs-cluster-name: ${{ steps.resolve.outputs.ecs-cluster-name }}
+      ecs-service-name: ${{ steps.resolve.outputs.ecs-service-name }}
+      task-family: ${{ steps.resolve.outputs.task-family }}
+      webapp-api-container-name: ${{ steps.resolve.outputs.webapp-api-container-name }}
+      webapp-api-ecr-repository: ${{ steps.resolve.outputs.webapp-api-ecr-repository }}
+      webapp-httpd-container-name: ${{ steps.resolve.outputs.webapp-httpd-container-name }}
+      webapp-httpd-ecr-repository: ${{ steps.resolve.outputs.webapp-httpd-ecr-repository }}
+    steps:
+      - name: Install Pulumi CLI
+        run: |
+          set -euo pipefail
+          echo "[resolve] Installing Pulumi CLI..."
+          curl -fsSL https://get.pulumi.com | sh
+          echo "$HOME/.pulumi/bin" >> "$GITHUB_PATH"
+          echo "[resolve] OK - Pulumi CLI installed ($("$HOME/.pulumi/bin/pulumi" version))."
+
+      - name: Resolve infrastructure config from Pulumi stack
+        id: resolve
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK: ${{ vars.CIVICSIGNAL_PULUMI_STACK }}
+        run: |
+          set -euo pipefail
+
+          log() { echo "[resolve] $*"; }
+          err() { echo "[resolve] ERROR: $*" >&2; }
+
+          if [[ -z "${PULUMI_STACK:-}" ]]; then
+            err "CIVICSIGNAL_PULUMI_STACK repository variable is required (e.g. 'dev')."
+            exit 1
+          fi
+          if [[ -z "${PULUMI_ACCESS_TOKEN:-}" ]]; then
+            err "PULUMI_ACCESS_TOKEN is not available. Add it as a repository, organization, or environment secret."
+            exit 1
+          fi
+          if ! command -v jq >/dev/null 2>&1; then
+            err "jq not found on PATH."
+            exit 1
+          fi
+
+          log "Logging in to Pulumi Cloud..."
+          pulumi login >/dev/null
+
+          log "Reading stack outputs for '$PULUMI_STACK'..."
+          pulumi_err="$(mktemp)"
+          if ! outputs="$(pulumi stack output --json --stack "$PULUMI_STACK" 2>"$pulumi_err")"; then
+            err "failed to read Pulumi stack outputs for '$PULUMI_STACK':"
+            cat "$pulumi_err" >&2
+            rm -f "$pulumi_err"
+            exit 1
+          fi
+          rm -f "$pulumi_err"
+
+          if [[ -z "$outputs" ]]; then
+            err "no outputs returned for stack '$PULUMI_STACK'. Is the stack deployed?"
+            exit 1
+          fi
+
+          missing=0
+          emit_required() {
+            local out_key="$1" json_key="$2" value
+            value="$(printf '%s' "$outputs" | jq -r --arg k "$json_key" '.[$k] // ""')"
+            if [[ "$value" == "null" ]]; then
+              value=""
+            fi
+            if [[ -z "$value" ]]; then
+              err "required Pulumi output '$json_key' is missing or empty in stack '$PULUMI_STACK'."
+              missing=1
+              return
+            fi
+            printf '%s=%s\n' "$out_key" "$value" >> "$GITHUB_OUTPUT"
+            log "OK - $out_key resolved from '$json_key'."
+          }
+
+          emit_required app-url civicsignalWebUrl
+          emit_required aws-region civicsignalAwsRegion
+          emit_required aws-role-to-assume civicsignalDeployGithubRoleArn
+          emit_required ecs-cluster-name civicsignalWebClusterName
+          emit_required ecs-service-name civicsignalWebServiceName
+          emit_required task-family civicsignalWebTaskFamily
+          emit_required webapp-api-container-name civicsignalWebWebappApiContainerName
+          emit_required webapp-api-ecr-repository civicsignalWebWebappApiRepositoryName
+          emit_required webapp-httpd-container-name civicsignalWebWebappHttpdContainerName
+          emit_required webapp-httpd-ecr-repository civicsignalWebWebappHttpdRepositoryName
+
+          if [[ "$missing" -ne 0 ]]; then
+            err "one or more required deploy outputs are missing. The infra stack likely needs a 'pulumi up' before this app workflow can deploy."
+            exit 1
+          fi
+
+  # Container definitions for both containers live on the same ECS task
+  # family/service, so their deploys must be serialized: each one registers a
+  # new task definition revision built on top of the current one, and two
+  # concurrent registrations for the same family would race.
+  deploy_webapp_api:
+    needs:
+      - resolve_infra
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: apps/webapp-api
+      container-name: ${{ needs.resolve_infra.outputs.webapp-api-container-name }}
+      dockerfile-path: apps/webapp-api/Dockerfile
+      ecr-repository: ${{ needs.resolve_infra.outputs.webapp-api-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.task-family }}
+
+  deploy_webapp_httpd:
+    needs:
+      - resolve_infra
+      - deploy_webapp_api
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted internal reusable workflow should track central infra fixes
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: apps/webapp-httpd
+      container-name: ${{ needs.resolve_infra.outputs.webapp-httpd-container-name }}
+      dockerfile-path: apps/webapp-httpd/Dockerfile
+      ecr-repository: ${{ needs.resolve_infra.outputs.webapp-httpd-ecr-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.task-family }}
+
+  verify_health:
+    needs:
+      - resolve_infra
+      - deploy_webapp_api
+      - deploy_webapp_httpd
+    runs-on: ${{ fromJSON(vars.CFA_RUNNER_LABELS || '["ubuntu-24.04"]') }}
+    steps:
+      - name: Verify public health endpoint
+        env:
+          APP_URL: ${{ needs.resolve_infra.outputs.app-url }}
+          HEALTH_PATH: /status
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$APP_URL" ]]; then
+            echo "[health] ERROR - app URL is empty." >&2
+            exit 1
+          fi
+
+          health_url="${APP_URL%/}/${HEALTH_PATH#/}"
+          echo "[health] Checking CivicSignal: $health_url"
+          for attempt in $(seq 1 24); do
+            status="$(curl -ksS -o /tmp/civicsignal-health-body.txt -w '%{http_code}' "$health_url" || true)"
+            if [[ "$status" == "200" ]]; then
+              echo "[health] OK - app is healthy."
+              exit 0
+            fi
+            echo "[health] Waiting for health check (attempt $attempt/24, status=$status)..."
+            sleep 10
+          done
+
+          echo "[health] ERROR - app did not become healthy." >&2
+          cat /tmp/civicsignal-health-body.txt >&2 || true
+          exit 1
