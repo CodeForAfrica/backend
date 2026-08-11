@@ -20,6 +20,7 @@ from mediawords.languages.pt import PortugueseLanguage
 from mediawords.languages.ro import RomanianLanguage
 from mediawords.languages.ru import RussianLanguage
 from mediawords.languages.sv import SwedishLanguage
+from mediawords.languages.sw import SwahiliLanguage
 from mediawords.languages.tr import TurkishLanguage
 from mediawords.languages.zh import ChineseLanguage
 from mediawords.util.log import create_logger
@@ -52,6 +53,7 @@ class LanguageFactory(object):
         RomanianLanguage.language_code(): RomanianLanguage,
         RussianLanguage.language_code(): RussianLanguage,
         SpanishLanguage.language_code(): SpanishLanguage,
+        SwahiliLanguage.language_code(): SwahiliLanguage,
         SwedishLanguage.language_code(): SwedishLanguage,
         TurkishLanguage.language_code(): TurkishLanguage,
     }
