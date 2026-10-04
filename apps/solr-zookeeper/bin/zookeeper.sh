@@ -9,7 +9,7 @@ export ZOOCFG=zoo.cfg
 MC_ZOOKEEPER_DATA_DIR="${MC_ZOOKEEPER_DATA_DIR:-/var/lib/zookeeper}"
 export ZOO_LOG_DIR="$MC_ZOOKEEPER_DATA_DIR"   # no slash at the end
 
-export SERVER_JVMFLAGS=""
+export SERVER_JVMFLAGS="-Xms64m -Xmx256m"
 
 # Custom logging configuration
 export SERVER_JVMFLAGS="${SERVER_JVMFLAGS} -Dlog4j.configuration=file:///opt/zookeeper/conf/log4j.properties"

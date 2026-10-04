@@ -4,41 +4,41 @@
     "command": [
       "topics_mine_worker.pl"
     ],
-    "memory": 1024
+    "memory": 512
   },
   {
     "name": "topics-mine-public",
     "command": [
       "topics_mine_public_worker.pl"
     ],
-    "memory": 1024
+    "memory": 512
   },
   {
     "name": "topics-snapshot",
     "command": [
       "topics_snapshot_worker.pl"
     ],
-    "memory": 1024
+    "memory": 512
   },
   {
     "name": "topics-extract-story-links",
     "command": [
       "topics_extract_story_links_worker.py"
     ],
-    "memory": 1024
+    "memory": 512
   },
   {
     "name": "topics-fetch-link",
     "command": [
       "topics_fetch_link_worker.py"
     ],
-    "memory": 1024
+    "memory": 512
   },
   {
     "name": "topics-map",
     "command": [
       "topics_map_worker_wrapper.sh"
     ],
-    "memory": 2048
+    "memory": 1024
   }
 ]

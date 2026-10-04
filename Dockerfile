@@ -192,8 +192,8 @@ USER mediacloud
 CMD ["topics_map_worker_wrapper.sh"]
 
 
-# Group related workers to leave room for the platform logging sidecar within
-# ECS's ten-container task limit. Each process retains its former memory budget.
+# Group related workers to fit within ECS's ten-container task limit.
+# Process budgets leave room for supervisor and runtime overhead.
 FROM import-solr-data AS pipeline
 USER root
 COPY --from=rescrape-media /usr/local/lib/x86_64-linux-gnu/perl/ /usr/local/lib/x86_64-linux-gnu/perl/
@@ -256,7 +256,7 @@ COPY apps/nytlabels-annotator/src/crappy-predict-news-labels/ /usr/src/crappy-pr
 COPY apps/base/bin/container_memory_limit.sh apps/base/bin/container_cpu_limit.sh /
 RUN sed -i 's/port="8080"/port="8082"/g' /usr/lib/tomcat7/conf/server.xml
 RUN java_binary=$(find /usr/lib/jvm -type f -path '*/bin/java' | head -1) && test -n "$java_binary" && ln -s "$(dirname "$(dirname "$java_binary")")" /opt/civicsignal-java
-ENV JAVA_HOME=/opt/civicsignal-java PATH="/usr/lib/tomcat7/bin:${PATH}" JAVA_OPTS="-Xmx3072m"
+ENV JAVA_HOME=/opt/civicsignal-java PATH="/usr/lib/tomcat7/bin:${PATH}" JAVA_OPTS="-Xmx2048m"
 COPY docker/worker-supervisor.py /civicsignal-worker-supervisor.py
 COPY docker/annotators.json /civicsignal-workers.json
 USER nobody

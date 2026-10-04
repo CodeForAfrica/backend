@@ -9,7 +9,7 @@ MC_DATABASE_URL='postgresql://user:password@database-host:5432/mediacloud?sslmod
 Alternatively copy `.env.example` to `.env`, fill in the URL, and run `docker compose up`.
 The first run builds the images. Open http://localhost:8082/status (or change
 `MC_HTTP_PORT`). Use `docker compose up --build` after changing source code.
-Docker Desktop needs up to 30 GiB of container memory plus build overhead;
+Docker Desktop needs up to 20 GiB of container memory plus build overhead;
 images are linux/amd64, including on Apple Silicon. If your clone did not include the runtime submodules, initialize them once:
 
 ```bash
@@ -20,8 +20,12 @@ The default stack contains nginx/API, ZooKeeper/Solr, RabbitMQ, crawler provider
 and fetcher, article extraction, extraction/vectorization, Solr import, media
 rescraping, six topic workers, CLIFF/NYT annotation servers and queue workers, and scheduled maintenance: ten containers. Pipeline and topic
 workers run in two supervised groups; a child exit restarts its group, and
-shutdown signals reach every child. Each process retains its original resource
-budget. The standard template uses its existing direct CloudWatch logging option to stay within ECS's ten-container task limit. The
+shutdown signals reach every child. Container limits match the initial 20 GiB ECS
+task: API 1 GiB, nginx 256 MiB, ZooKeeper 512 MiB, Solr 4 GiB, RabbitMQ 512 MiB,
+extractor 512 MiB, annotators 4 GiB, pipeline 4 GiB, topics 4 GiB and maintenance
+1 GiB. Worker budgets and Java heaps leave room for runtime overhead within these
+limits. These are starting estimates; the fixture test does not establish production
+peak memory needs. The standard template uses its existing direct CloudWatch logging option to stay within ECS's ten-container task limit. The
 component inventory is `runtime-services.json`. SMTP is an external service;
 set `MC_SMTP_HOST`, `MC_SMTP_PORT`, and, where needed, `MC_SMTP_STARTTLS=1`,
 `MC_SMTP_USERNAME`, and `MC_SMTP_PASSWORD`. Optional legacy integrations such as
