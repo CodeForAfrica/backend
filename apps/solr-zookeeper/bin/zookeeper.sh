@@ -6,7 +6,8 @@ set -e
 # Configure ZooKeeper
 export ZOOCFGDIR=/opt/zookeeper/conf    # no slash at the end
 export ZOOCFG=zoo.cfg
-export ZOO_LOG_DIR=/var/lib/zookeeper   # no slash at the end
+MC_ZOOKEEPER_DATA_DIR="${MC_ZOOKEEPER_DATA_DIR:-/var/lib/zookeeper}"
+export ZOO_LOG_DIR="$MC_ZOOKEEPER_DATA_DIR"   # no slash at the end
 
 export SERVER_JVMFLAGS=""
 
@@ -19,15 +20,10 @@ if [ ! -d /var/lib/zookeeper-template/ ]; then
     exit 1
 fi
 
-if [ ! -d /var/lib/zookeeper/ ]; then
-    echo "ZooKeeper data directory does not exist."
-    exit 1
+mkdir -p "$MC_ZOOKEEPER_DATA_DIR"
+# Seed only an empty directory. Existing coordination state survives restarts.
+if [ -z "$(ls -A "$MC_ZOOKEEPER_DATA_DIR")" ]; then
+    cp -R /var/lib/zookeeper-template/. "$MC_ZOOKEEPER_DATA_DIR/"
 fi
-
-if [ ! -z "$(ls -A /var/lib/zookeeper/)" ]; then
-	rm -rf /var/lib/zookeeper/*
-fi
-
-cp -R /var/lib/zookeeper-template/* /var/lib/zookeeper/
 
 exec /opt/zookeeper/bin/zkServer.sh start-foreground

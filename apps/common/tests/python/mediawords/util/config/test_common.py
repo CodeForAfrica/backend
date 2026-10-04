@@ -124,3 +124,51 @@ def test_authenticated_domains_from_json():
                 {'domain': 'domain', 'username': 'user', 'password': 'pass'}
             ]
         """)
+
+
+def test_existing_database_url_decodes_credentials_and_defaults_to_postgres_port(monkeypatch):
+    monkeypatch.setenv('MC_DATABASE_URL', 'postgresql://user%40domain:p%40ss%2Fword@example.com/app%2Ddb?sslmode=require&connect_timeout=5')
+    assert DatabaseConfig.username() == 'user@domain'
+    assert DatabaseConfig.password() == 'p@ss/word'
+    assert DatabaseConfig.database_name() == 'app-db'
+    assert DatabaseConfig.port() == 5432
+    assert DatabaseConfig.connection_options() == {'sslmode': 'require', 'connect_timeout': '5'}
+
+
+def test_invalid_existing_database_url_is_rejected(monkeypatch):
+    from mediawords.util.config import McConfigException
+    monkeypatch.setenv('MC_DATABASE_URL', 'https://example.com/db')
+    with pytest.raises(McConfigException):
+        DatabaseConfig.hostname()
+    monkeypatch.setenv('MC_DATABASE_URL', 'postgresql://user:password@db/app?password=wrong')
+    with pytest.raises(McConfigException):
+        DatabaseConfig.connection_options()
+
+
+def test_rabbitmq_sidecar_credentials_override_url_defaults(monkeypatch):
+    monkeypatch.setenv('MC_RABBITMQ_HOST', 'localhost')
+    monkeypatch.setenv('MC_RABBITMQ_PASSWORD', 'secret')
+    assert RabbitMQConfig.hostname() == 'localhost'
+    assert RabbitMQConfig.password() == 'secret'
+
+
+def test_external_smtp_configuration(monkeypatch):
+    from mediawords.util.config.common import SMTPConfig
+    monkeypatch.setenv('MC_SMTP_HOST', 'mail.example.org')
+    monkeypatch.setenv('MC_SMTP_PORT', '587')
+    monkeypatch.setenv('MC_SMTP_STARTTLS', '1')
+    monkeypatch.setenv('MC_SMTP_USERNAME', 'mailer')
+    monkeypatch.setenv('MC_SMTP_PASSWORD', 'secret')
+    assert SMTPConfig.hostname() == 'mail.example.org'
+    assert SMTPConfig.port() == 587
+    assert SMTPConfig.use_starttls()
+    assert SMTPConfig.username() == 'mailer'
+    assert SMTPConfig.password() == 'secret'
+
+
+def test_worker_connection_urls_preserve_ssl_and_escape_credentials(monkeypatch):
+    monkeypatch.setenv('MC_DATABASE_URL', 'postgresql://user%40domain:p%40ss%2Fword@example.com/app?sslmode=require')
+    assert DatabaseConfig.connection_url('db+postgresql+psycopg2') == 'db+postgresql+psycopg2://user%40domain:p%40ss%2Fword@example.com:5432/app?sslmode=require'
+    monkeypatch.setenv('MC_RABBITMQ_HOST', 'localhost')
+    monkeypatch.setenv('MC_RABBITMQ_PASSWORD', 'p@ss/word')
+    assert RabbitMQConfig.connection_url() == 'amqp://mediacloud:p%40ss%2Fword@localhost:5672/%2Fmediacloud'

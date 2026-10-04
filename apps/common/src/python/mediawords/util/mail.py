@@ -141,6 +141,11 @@ def send_email(message: Message) -> bool:
             )
 
             # Send message
+            if CommonConfig.smtp().use_starttls():
+                smtp.starttls()
+            if CommonConfig.smtp().username():
+                smtp.login(CommonConfig.smtp().username(), CommonConfig.smtp().password())
+
             refused_recipients = smtp.sendmail(mime_message['From'], mime_message['To'], mime_message.as_string())
             if len(refused_recipients):
                 log.warning("Unable to send email to the following recipients: %s" % str(refused_recipients))

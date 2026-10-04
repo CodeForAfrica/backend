@@ -1,0 +1,72 @@
+[
+  {
+    "name": "webapp-api",
+    "cpu": 512,
+    "memory": 2048,
+    "port": 9090,
+    "database": true
+  },
+  {
+    "name": "webapp-httpd",
+    "cpu": 128,
+    "memory": 256,
+    "port": 80,
+    "database": false
+  },
+  {
+    "name": "solr-zookeeper",
+    "cpu": 128,
+    "memory": 1024,
+    "port": 2181,
+    "database": false
+  },
+  {
+    "name": "solr-shard-01",
+    "cpu": 512,
+    "memory": 4096,
+    "port": 8983,
+    "database": false
+  },
+  {
+    "name": "rabbitmq-server",
+    "cpu": 128,
+    "memory": 512,
+    "port": 5672,
+    "database": false
+  },
+  {
+    "name": "extract-article-from-page",
+    "cpu": 256,
+    "memory": 512,
+    "port": 8080,
+    "database": false
+  },
+  {
+    "name": "maintenance",
+    "cpu": 128,
+    "memory": 4096,
+    "port": 0,
+    "database": true
+  },
+  {
+    "name": "pipeline",
+    "cpu": 1280,
+    "memory": 5120,
+    "port": 0,
+    "database": true
+  },
+  {
+    "name": "topics",
+    "cpu": 768,
+    "memory": 7168,
+    "port": 0,
+    "database": true
+  },
+  {
+    "name": "annotators",
+    "cpu": 256,
+    "memory": 5632,
+    "port": 0,
+    "database": false
+  }
+]

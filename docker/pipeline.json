@@ -1,0 +1,52 @@
+[
+  {
+    "name": "crawler-provider",
+    "command": [
+      "crawler-provider.py"
+    ],
+    "memory": 1024
+  },
+  {
+    "name": "crawler-fetcher",
+    "command": [
+      "crawler-fetcher.py"
+    ],
+    "memory": 512
+  },
+  {
+    "name": "extract-and-vector",
+    "command": [
+      "extract_and_vector_worker.py"
+    ],
+    "memory": 512
+  },
+  {
+    "name": "import-solr-data",
+    "command": [
+      "import_solr_data.pl",
+      "--daemon"
+    ],
+    "memory": 2048
+  },
+  {
+    "name": "rescrape-media",
+    "command": [
+      "rescrape_media_worker.pl"
+    ],
+    "memory": 512
+  },
+  {
+    "name": "cliff-fetch-annotation-and-tag",
+    "command": [
+      "cliff_tags_from_annotation_worker.py"
+    ],
+    "memory": 256
+  },
+  {
+    "name": "nytlabels-fetch-annotation-and-tag",
+    "command": [
+      "nytlabels_tags_from_annotation_worker.py"
+    ],
+    "memory": 256
+  }
+]

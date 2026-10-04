@@ -1,3 +1,5 @@
+For CivicSignal local containers and the EC2-to-ECS deployment, see [the runtime guide](doc/ecs-migration.markdown).
+
 This is the source code for the [Media Cloud](http://mediacloud.org/) core system. Media Cloud, a joint project of the [Berkman Center for Internet & Society at Harvard University](http://cyber.law.harvard.edu/) and the [Center for Civic Media at MIT](http://civic.mit.edu/), is an open source, open data platform that allows researchers to answer complex quantitative and qualitative questions about the content of online media.
 
 For more information on Media Cloud, go to [mediacloud.org](http://mediacloud.org/).

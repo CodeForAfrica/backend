@@ -129,3 +129,8 @@ mediawords*.yml
 test*.log
 
 /volumes/
+
+# Local runtime credentials and verification settings
+/.env
+/.env.*
+!/.env.example

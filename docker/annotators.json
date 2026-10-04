@@ -1,0 +1,22 @@
+[
+  {
+    "name": "cliff-annotator",
+    "command": [
+      "catalina.sh",
+      "run"
+    ],
+    "memory": 3072
+  },
+  {
+    "name": "nytlabels-annotator",
+    "command": [
+      "python3",
+      "/usr/src/crappy-predict-news-labels/nytlabels_http_server.py",
+      "--port",
+      "8081",
+      "--num_threads",
+      "1"
+    ],
+    "memory": 1536
+  }
+]
