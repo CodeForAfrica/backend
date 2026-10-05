@@ -2,7 +2,7 @@
   {
     "name": "webapp-api",
     "cpu": 512,
-    "memory": 2048,
+    "memory": 1024,
     "port": 9090,
     "database": true
   },
@@ -16,7 +16,7 @@
   {
     "name": "solr-zookeeper",
     "cpu": 128,
-    "memory": 1024,
+    "memory": 512,
     "port": 2181,
     "database": false
   },
@@ -44,28 +44,28 @@
   {
     "name": "maintenance",
     "cpu": 128,
-    "memory": 4096,
+    "memory": 1024,
     "port": 0,
     "database": true
   },
   {
     "name": "pipeline",
     "cpu": 1280,
-    "memory": 5120,
+    "memory": 4096,
     "port": 0,
     "database": true
   },
   {
     "name": "topics",
     "cpu": 768,
-    "memory": 7168,
+    "memory": 4096,
     "port": 0,
     "database": true
   },
   {
     "name": "annotators",
     "cpu": 256,
-    "memory": 5632,
+    "memory": 4096,
     "port": 0,
     "database": false
   }

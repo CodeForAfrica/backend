@@ -32,6 +32,40 @@ set `MC_SMTP_HOST`, `MC_SMTP_PORT`, and, where needed, `MC_SMTP_STARTTLS=1`,
 Feedly, podcast ingestion, sitemap ingestion, Twitter and Word2Vec snapshots are not enabled by this
 runtime. Confirm which of these are active on EC2 before retiring that server.
 
+## Local dev deployment
+
+Apply the CivicSignal dev stack from the IaC checkout first, using its
+`scripts/deploy_to_aws_locally.sh` tool. Then, from this repository:
+
+```bash
+bash scripts/deploy-locally.sh --infra-repo ../iac-cfa-pulumi --check
+bash scripts/deploy-locally.sh --infra-repo ../iac-cfa-pulumi
+```
+
+Pass the PR checkout path when testing unmerged infrastructure. The defaults are
+`--profile cfa-bootstrap --stack dev`; the tool deliberately supports dev only.
+It requires Go, Git, Docker Buildx, AWS CLI and a logged-in Pulumi CLI. Credentials
+stay in the normal local AWS/Pulumi credential stores; no database password is
+read or passed by the app deploy tool.
+
+The tool resolves all ten containers through the same runtime contract as the
+dev workflow, builds and pushes linux/amd64 images sequentially, then uses the
+IaC repository's shared `ecs-release-images` helper to replace every image with
+an immutable digest in one task revision. It preserves the latest template's
+memory limits, secret references and mounts. Local builds and ECR storage carry
+costs; this command does not trigger GitHub build jobs. GitHub's scanning,
+signing and artifact steps remain part of the shared CI workflow.
+
+It waits for the expected task revision to stabilize and for the public HTTPS
+`/status` endpoint to return 200. A failed deployment restores a verified stable
+previous revision, unless another operator has already changed the service.
+A failed first deployment remains visible because it has no verified rollback
+target. The stateful task uses stop-before-start releases. Coordinate old EC2
+workers before cutover: both deployments use the existing database, and this
+tool does not stop EC2 or restore the production Solr index.
+Use `--resume` when deliberately deploying and resuming a paused dev service.
+Startup failures stop the tool on the first failed release task.
+
 ## Existing data
 
 There is no PostgreSQL container, schema initialization, or schema migration in
@@ -41,6 +75,9 @@ options include `sslmode`, `sslrootcert`, `sslcert`, `sslkey`, `connect_timeout`
 and `options`. The database must already contain the application schema.
 The workers and maintenance jobs perform normal application writes, so starting
 the stack against a production database starts real crawling and scheduled work.
+Crawler host selection uses an indexed SQL query rather than requiring the newer
+`get_downloads_for_queue()` stored function, which the existing database lacks.
+The queue still uses the existing `pop_queued_download()` function.
 
 Preserve the existing storage settings as well as the database URL. PostgreSQL
 is the default download/public-store backend. If the existing deployment uses
