@@ -134,7 +134,9 @@ The existing AWS PostgreSQL connection was also verified over an SSH tunnel,
 using its actual credentials with read-only transactions. The existing monitoring
 API key authenticated with the current application code inside a transaction
 that was rolled back (legacy login performs an UPDATE even for read-only users).
-No production crawling, schema migration or deployment was performed. Protected,
+The dev ECS deployment now connects to this existing database and runs normal
+workers, which can write application data. No database schema migration was
+performed. Protected,
 gitignored `.env.aws.local` contains the existing private database URL;
 `.env.production.local` preserves the production storage settings and a read-only
 local tunnel URL. Do not start the full worker stack against that production URL
