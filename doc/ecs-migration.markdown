@@ -25,7 +25,9 @@ task: API 1 GiB, nginx 256 MiB, ZooKeeper 512 MiB, Solr 4 GiB, RabbitMQ 512 MiB,
 extractor 512 MiB, annotators 4 GiB, pipeline 4 GiB, topics 4 GiB and maintenance
 1 GiB. Worker budgets and Java heaps leave room for runtime overhead within these
 limits. These are starting estimates; the fixture test does not establish production
-peak memory needs. The standard template uses its existing direct CloudWatch logging option to stay within ECS's ten-container task limit. The
+peak memory needs. Compose and ECS use the same container UIDs: 1000 by default,
+65534 for the annotators, and 0 for nginx and maintenance, which render root-owned
+configuration and run system cron. The standard template uses its existing direct CloudWatch logging option to stay within ECS's ten-container task limit. The
 component inventory is `runtime-services.json`. SMTP is an external service;
 set `MC_SMTP_HOST`, `MC_SMTP_PORT`, and, where needed, `MC_SMTP_STARTTLS=1`,
 `MC_SMTP_USERNAME`, and `MC_SMTP_PASSWORD`. Optional legacy integrations such as
