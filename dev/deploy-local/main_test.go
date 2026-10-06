@@ -12,13 +12,14 @@ func validValues() map[string]string {
 		components = append(components, component{name, "ecr-" + name})
 	}
 	data, _ := json.Marshal(components)
-	return map[string]string{"aws-region": "eu-west-1", "ecs-cluster-name": "cluster", "ecs-service-name": "service", "task-family": "family", "app-url": "https://civicsignal.dev.codeforafrica.org", "matrix": string(data)}
+	return map[string]string{"aws-region": "eu-west-1", "ecs-cluster-name": "cluster", "ecs-service-name": "service", "task-family": "family", "app-url": "https://backend.civicsignal.dev.codeforafrica.org", "matrix": string(data)}
 }
 func TestPlanRejectsUnsafeDeploymentInputs(t *testing.T) {
 	for _, test := range []struct{ name, key, value, account string }{
 		{"wrong account", "", "", "123456789012"},
 		{"wrong region", "aws-region", "eu-west-2", "499665620971"},
 		{"production endpoint", "app-url", "https://civicsignal.org", "499665620971"},
+		{"frontend endpoint", "app-url", "https://explorer.civicsignal.dev.codeforafrica.org", "499665620971"},
 		{"missing service", "ecs-service-name", "", "499665620971"},
 		{"partial release", "matrix", "[]", "499665620971"},
 	} {

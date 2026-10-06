@@ -85,7 +85,7 @@ func decodePlan(values map[string]string, account string) (plan, error) {
 		return p, errors.New("CivicSignal dev deployment requires account 499665620971 in eu-west-1")
 	}
 	u, err := url.Parse(p.URL)
-	if err != nil || u.Scheme != "https" || u.Host != "civicsignal.dev.codeforafrica.org" {
+	if err != nil || u.Scheme != "https" || u.Host != "backend.civicsignal.dev.codeforafrica.org" {
 		return p, errors.New("expected CivicSignal dev HTTPS endpoint")
 	}
 	if p.Cluster == "" || p.Service == "" || p.Family == "" {
