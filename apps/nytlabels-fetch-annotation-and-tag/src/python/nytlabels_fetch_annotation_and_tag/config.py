@@ -21,4 +21,4 @@ class NYTLabelsTagsFromAnnotationConfig(object):
     @staticmethod
     def annotator_url() -> str:
         """Annotator URL (text parsing endpoint), e.g. "http://localhost/predict.json"."""
-        return 'http://nytlabels-annotator:8080/predict.json'
+        return env_value('MC_NYTLABELS_ANNOTATOR_URL', required=False) or 'http://nytlabels-annotator:8080/predict.json'

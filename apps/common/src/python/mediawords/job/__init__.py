@@ -398,22 +398,8 @@ class JobBroker(object):
         config = CommonConfig()
 
         rabbitmq_config = config.rabbitmq()
-        broker_uri = 'amqp://{username}:{password}@{hostname}:{port}/{vhost}'.format(
-            username=rabbitmq_config.username(),
-            password=rabbitmq_config.password(),
-            hostname=rabbitmq_config.hostname(),
-            port=rabbitmq_config.port(),
-            vhost=rabbitmq_config.vhost(),
-        )
-
-        db_config = CommonConfig.database()
-        result_backend_url = 'db+postgresql+psycopg2://{username}:{password}@{hostname}:{port}/{database}'.format(
-            username=db_config.username(),
-            password=db_config.password(),
-            hostname=db_config.hostname(),
-            port=db_config.port(),
-            database=db_config.database_name(),
-        )
+        broker_uri = rabbitmq_config.connection_url()
+        result_backend_url = CommonConfig.database().connection_url('db+postgresql+psycopg2')
 
         self.__app = celery.Celery(queue_name, broker=broker_uri, backend=result_backend_url)
 

@@ -1,0 +1,121 @@
+name: deploy_to_dev
+
+# High-cost workflow: manual only. Build all components before one atomic rollout.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: civicsignal-deploy-dev
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  resolve_infra:
+    environment: dev
+    runs-on: ${{ fromJSON(vars.CFA_RUNNER_LABELS || '["ubuntu-24.04"]') }}
+    outputs:
+      app-url: ${{ steps.resolve.outputs.app-url }}
+      aws-region: ${{ steps.resolve.outputs.aws-region }}
+      aws-role-to-assume: ${{ steps.resolve.outputs.aws-role-to-assume }}
+      ecs-cluster-name: ${{ steps.resolve.outputs.ecs-cluster-name }}
+      ecs-service-name: ${{ steps.resolve.outputs.ecs-service-name }}
+      task-family: ${{ steps.resolve.outputs.task-family }}
+      matrix: ${{ steps.resolve.outputs.matrix }}
+      primary-repository: ${{ steps.resolve.outputs.primary-repository }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: '1.26.x'
+          cache: false
+      - name: Install Pulumi CLI
+        run: |
+          set -euo pipefail
+          curl -fsSL https://get.pulumi.com | sh
+          echo "$HOME/.pulumi/bin" >> "$GITHUB_PATH"
+      - name: Resolve complete backend infrastructure
+        id: resolve
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          PULUMI_STACK: ${{ vars.CIVICSIGNAL_PULUMI_STACK }}
+        run: |
+          set -euo pipefail
+          : "${PULUMI_STACK:?Set CIVICSIGNAL_PULUMI_STACK to the fully qualified org/project/stack}"
+          : "${PULUMI_ACCESS_TOKEN:?Set PULUMI_ACCESS_TOKEN}"
+          pulumi login >/dev/null
+          pulumi stack output --json --stack "$PULUMI_STACK" > /tmp/civicsignal-stack-outputs.json
+          go run dev/runtime-contract/main.go /tmp/civicsignal-stack-outputs.json
+
+  build_components:
+    needs: resolve_infra
+    strategy:
+      fail-fast: true
+      max-parallel: 2
+      matrix:
+        component: ${{ fromJSON(needs.resolve_infra.outputs.matrix) }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted central workflow
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      build-context: .
+      dockerfile-path: Dockerfile
+      docker-platform: linux/amd64
+      build-args: CIVICSIGNAL_COMPONENT=${{ matrix.component.name }}
+      submodule-paths: |
+        apps/common/src/python/mediawords/languages/hi/hindi-hunspell
+        apps/common/src/perl/MediaWords/Util/Mail/Message/Templates/email-templates
+        apps/common/src/python/mediawords/languages/ca/snowball_stemmer
+        apps/common/src/python/mediawords/languages/lt/snowball_stemmer
+        apps/common/src/python/snowball
+      container-name: ${{ matrix.component.name }}
+      ecr-repository: ${{ matrix.component.repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.task-family }}
+      deploy: false
+      image-artifact-name: civicsignal-image-${{ matrix.component.name }}
+
+  deploy_backend:
+    needs: [resolve_infra, build_components]
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
+    uses: CodeForAfrica/iac-cfa-pulumi/.github/workflows/deploy-fargate-service.yml@main # zizmor: ignore[unpinned-uses] trusted central workflow
+    with:
+      aws-region: ${{ needs.resolve_infra.outputs.aws-region }}
+      aws-role-to-assume: ${{ needs.resolve_infra.outputs.aws-role-to-assume }}
+      container-name: webapp-api
+      ecr-repository: ${{ needs.resolve_infra.outputs.primary-repository }}
+      ecs-cluster-name: ${{ needs.resolve_infra.outputs.ecs-cluster-name }}
+      ecs-service-name: ${{ needs.resolve_infra.outputs.ecs-service-name }}
+      task-family: ${{ needs.resolve_infra.outputs.task-family }}
+      release-images-artifact-pattern: civicsignal-image-*
+
+  verify_health:
+    needs: [resolve_infra, deploy_backend]
+    runs-on: ${{ fromJSON(vars.CFA_RUNNER_LABELS || '["ubuntu-24.04"]') }}
+    timeout-minutes: 10
+    steps:
+      - name: Verify public API
+        env:
+          APP_URL: ${{ needs.resolve_infra.outputs.app-url }}
+        run: |
+          set -euo pipefail
+          : "${APP_URL:?Infrastructure must export the backend URL}"
+          curl --fail --silent --show-error --connect-timeout 10 --max-time 20 --retry 12 --retry-delay 10 --retry-all-errors "${APP_URL%/}/status"
+          status="$(curl --silent --show-error --connect-timeout 10 --max-time 20 -o /tmp/civicsignal-api-auth-check.json -w '%{http_code}' "${APP_URL%/}/api/v2/stories_public/list")"
+          test "$status" = 403
+          jq -e '.error | type == "string"' /tmp/civicsignal-api-auth-check.json >/dev/null
+          echo '[health] Backend status and API authentication checks passed.'

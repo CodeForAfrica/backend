@@ -146,6 +146,34 @@ def _add_stale_feeds(db: DatabaseHandler) -> None:
     log.info("added stale feeds: %d" % len(downloads))
 
 
+def _pending_download_ids(db: DatabaseHandler):
+    # Keep the indexed host walk from get_downloads_for_queue(), without requiring
+    # that newer stored function on an existing database during the ECS move.
+    return db.query("""
+        WITH RECURSIVE pending_hosts AS (
+            (SELECT host FROM downloads_pending ORDER BY host LIMIT 1)
+            UNION ALL
+            SELECT (SELECT host FROM downloads_pending
+                    WHERE host > pending_hosts.host ORDER BY host LIMIT 1)
+            FROM pending_hosts WHERE host IS NOT NULL
+        )
+        SELECT candidate.downloads_id
+        FROM pending_hosts
+        CROSS JOIN LATERAL (
+            SELECT pending.downloads_id
+            FROM downloads_pending pending
+            WHERE pending.host = pending_hosts.host
+              AND NOT EXISTS (
+                  SELECT 1 FROM queued_downloads queued
+                  WHERE queued.downloads_id = pending.downloads_id
+              )
+            ORDER BY pending.priority, pending.downloads_id DESC NULLS LAST
+            LIMIT 1
+        ) candidate
+        WHERE pending_hosts.host IS NOT NULL
+    """).flat()
+
+
 def provide_download_ids(db: DatabaseHandler) -> None:
     """Return a list of pending downloads ids to queue for fetching.
 
@@ -160,9 +188,7 @@ def provide_download_ids(db: DatabaseHandler) -> None:
 
     log.info("querying pending downloads ...")
 
-    # get one downloads_id per host, ordered by priority asc, downloads_id desc, do this through a plpgsql
-    # function because that's the only way to avoid an index scan of the entire (host, priority, downloads_id) index
-    downloads_ids = db.query("select get_downloads_for_queue() downloads_id").flat()
+    downloads_ids = _pending_download_ids(db)
 
     log.info("provide downloads host downloads: %d" % len(downloads_ids))
 
