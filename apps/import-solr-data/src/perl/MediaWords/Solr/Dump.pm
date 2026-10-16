@@ -619,6 +619,16 @@ sub import_data($;$)
 
         my $import_time = time() - $start_time;
         INFO( "imported " . scalar( @{ $imported_stories_ids } ) . " of $num_stories queued stories in $import_time seconds" );
+
+        # In one-shot (empty_queue) mode, stop once a cycle sends nothing: the stories
+        # still queued are not sendable yet (e.g. not yet extracted) and, now that we no
+        # longer delete un-sent stories from the queue, would otherwise spin this loop
+        # forever. Leave them queued for the next run / the daemon to retry.
+        if ( $empty_queue && !$daemon && !scalar( @{ $imported_stories_ids } ) )
+        {
+            INFO( "no sendable stories left in queue; stopping one-shot import." );
+            last;
+        }
     }
 }
 
