@@ -285,7 +285,10 @@ sub _import_stories($)
     TRACE( "committing solr index changes ..." );
     MediaWords::Solr::Request::solr_request( 'update', { 'commit' => 'true' } );
 
-    _delete_stories_from_import_queue( $db, $stories_ids );
+    # Only delete the stories we actually sent to Solr. Stories that were not sent
+    # (e.g. not yet extracted, so _get_stories_json_from_db_single() produced no row)
+    # stay queued and get retried on a later cycle instead of being silently dropped.
+    _delete_stories_from_import_queue( $db, $json->{ stories_ids } );
 
     return $json->{ stories_ids };
 }
@@ -599,12 +602,14 @@ sub import_data($;$)
             _delete_queued_stories( $db ) || die( "delete stories failed." );
         }
 
-        _import_stories( $db );
+        # _import_stories() only sends the stories it could build documents for; capture
+        # that subset so we log exactly what was imported, not the whole pulled batch.
+        my $imported_stories_ids = _import_stories( $db );
 
         if ( !$skip_logging )
         {
-            _save_import_date( $db, !$full, $stories_ids );
-            _save_import_log( $db, $stories_ids );
+            _save_import_date( $db, !$full, $imported_stories_ids );
+            _save_import_log( $db, $imported_stories_ids );
         }
 
         if ( !$skip_logging )
@@ -613,7 +618,7 @@ sub import_data($;$)
         }
 
         my $import_time = time() - $start_time;
-        INFO( "imported $num_stories stories in $import_time seconds" );
+        INFO( "imported " . scalar( @{ $imported_stories_ids } ) . " of $num_stories queued stories in $import_time seconds" );
     }
 }
 
