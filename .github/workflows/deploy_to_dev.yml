@@ -31,14 +31,12 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
           persist-credentials: false
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
-        with:
-          go-version: '1.26.x'
-          cache: false
       - name: Install Pulumi CLI
         run: |
           set -euo pipefail
+          echo "[resolve] Installing Pulumi CLI..."
           curl -fsSL https://get.pulumi.com | sh
+          echo "[resolve] OK - Pulumi CLI installed."
           echo "$HOME/.pulumi/bin" >> "$GITHUB_PATH"
       - name: Resolve complete backend infrastructure
         id: resolve
@@ -49,9 +47,42 @@ jobs:
           set -euo pipefail
           : "${PULUMI_STACK:?Set CIVICSIGNAL_PULUMI_STACK to the fully qualified org/project/stack}"
           : "${PULUMI_ACCESS_TOKEN:?Set PULUMI_ACCESS_TOKEN}"
+          echo "[resolve] Reading public Pulumi stack outputs..."
           pulumi login >/dev/null
           pulumi stack output --json --stack "$PULUMI_STACK" > /tmp/civicsignal-stack-outputs.json
-          go run dev/runtime-contract/main.go /tmp/civicsignal-stack-outputs.json
+          echo '[resolve] Validating required public stack outputs...'
+          emit_required() {
+            local name="$1" key="$2" value
+            value="$(jq -er --arg key "$key" '.[$key] | select(type == "string" and length > 0 and (test("[\r\n]") | not))' "$OUTPUTS_FILE")" || {
+              echo "[resolve] Missing or invalid output: $key" >&2
+              exit 1
+            }
+            printf '%s=%s\n' "$name" "$value" >> "$GITHUB_OUTPUT"
+            echo "[resolve] OK - $name resolved."
+          }
+          OUTPUTS_FILE=/tmp/civicsignal-stack-outputs.json
+          emit_required app-url civicsignalWebUrl
+          emit_required aws-region civicsignalAwsRegion
+          emit_required aws-role-to-assume civicsignalDeployGithubRoleArn
+          emit_required ecs-cluster-name civicsignalWebClusterName
+          emit_required ecs-service-name civicsignalWebServiceName
+          emit_required task-family civicsignalWebTaskFamily
+          echo '[resolve] Resolving all runtime component repositories...'
+          matrix="$(jq -cer --slurpfile services runtime-services.json '
+            . as $outputs |
+            [$services[0][] | .name as $name |
+              ("civicsignalWeb" + ($name | split("-") | map((.[0:1] | ascii_upcase) + .[1:]) | join(""))) as $prefix |
+              if $outputs[$prefix + "ContainerName"] != $name then error("Container mismatch: " + $name) else . end |
+              $outputs[$prefix + "RepositoryName"] as $repo |
+              if ($repo | type) != "string" then error("Missing repository: " + $name)
+              elif ($repo | length) == 0 or ($repo | test("[\r\n]")) then error("Invalid repository: " + $name)
+              else {name: $name, repository: $repo} end] |
+            if length == 0 then error("No runtime components") else . end
+          ' "$OUTPUTS_FILE")"
+          printf 'matrix=%s\n' "$matrix" >> "$GITHUB_OUTPUT"
+          primary="$(jq -er '.[] | select(.name == "webapp-api") | .repository' <<< "$matrix")"
+          printf 'primary-repository=%s\n' "$primary" >> "$GITHUB_OUTPUT"
+          echo '[resolve] OK - deployment outputs validated.'
 
   build_components:
     needs: resolve_infra

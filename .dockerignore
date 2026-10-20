@@ -16,3 +16,8 @@ provision
 .workflow-release-images
 .release-images
 .release-image
+
+# Local operator tools are not part of application images.
+dev/deploy-local
+dev/runtime-contract
+scripts/deploy-locally.sh
