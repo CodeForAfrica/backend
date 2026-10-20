@@ -33,4 +33,4 @@ class CLIFFTagsFromAnnotationConfig(object):
     @staticmethod
     def annotator_url() -> str:
         """Annotator URL (text parsing endpoint), e.g. "http://localhost:8080/."""
-        return 'http://cliff-annotator:8080/cliff/parse/text'
+        return env_value('MC_CLIFF_ANNOTATOR_URL', required=False) or 'http://cliff-annotator:8080/cliff/parse/text'

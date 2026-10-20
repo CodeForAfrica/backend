@@ -1,0 +1,6 @@
+# Local verification only: an explicit subnet avoids exhausted Docker Desktop pools.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${CIVICSIGNAL_E2E_SUBNET:-10.253.250.0/24}

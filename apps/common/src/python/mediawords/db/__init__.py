@@ -31,6 +31,7 @@ def connect_to_db() -> DatabaseHandler:
                 username=db_config.username(),
                 password=db_config.password(),
                 database=db_config.database_name(),
+                connection_options=db_config.connection_options(),
             )
             if not db:
                 raise ValueError("Returned value is None.")

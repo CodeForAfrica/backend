@@ -1,7 +1,7 @@
 import os
 import re
 import socket
-from typing import Union, List, Dict, Any
+from typing import Union, List, Dict, Any, Optional
 
 import psycopg2
 import psycopg2.extras
@@ -67,7 +67,8 @@ class DatabaseHandler(object):
                  port: int,
                  username: str,
                  password: str,
-                 database: str):
+                 database: str,
+                 connection_options: Optional[Dict[str, str]] = None):
         """Database handler constructor; connects to PostgreSQL too."""
 
         host = decode_object_from_bytes_if_needed(host)
@@ -89,6 +90,7 @@ class DatabaseHandler(object):
             username=username,
             password=password,
             database=database,
+            connection_options=connection_options,
         )
 
     def __connect(self,
@@ -96,7 +98,8 @@ class DatabaseHandler(object):
                   port: int,
                   username: str,
                   password: str,
-                  database: str) -> None:
+                  database: str,
+                  connection_options: Optional[Dict[str, str]] = None) -> None:
         """Connect to PostgreSQL."""
 
         host = decode_object_from_bytes_if_needed(host)
@@ -120,7 +123,8 @@ class DatabaseHandler(object):
             user=username,
             password=password,
             database=database,
-            application_name=application_name
+            application_name=application_name,
+            **(connection_options or {})
         )
 
         # Magic bits for psycopg2 to start supporting UTF-8
