@@ -290,6 +290,15 @@ sub _import_stories($)
     # stay queued and get retried on a later cycle instead of being silently dropped.
     _delete_stories_from_import_queue( $db, $json->{ stories_ids } );
 
+    # Of the stories we could not send, dead-letter the ones that can never become
+    # sendable (processed, but no story_sentences). Left queued they would be retried
+    # every cycle forever and grow the queue without bound (and, in daemon mode, keep the
+    # delta above the throttle threshold so the importer stops sleeping). See
+    # _delete_unsendable_stories_from_import_queue() for why this is safe.
+    my %sent_ids = map { $_ => 1 } @{ $json->{ stories_ids } };
+    my $unsent_ids = [ grep { !$sent_ids{ $_ } } @{ $stories_ids } ];
+    _delete_unsendable_stories_from_import_queue( $db, $unsent_ids );
+
     return $json->{ stories_ids };
 }
 
@@ -481,6 +490,40 @@ sub _delete_stories_from_import_queue
         <<SQL
         DELETE FROM $stories_queue_table
         WHERE stories_id IN ( select id from $id_table )
+SQL
+    );
+}
+
+# Dead-letter queued stories that can never be built into a Solr document: they are
+# processed but have no story_sentences (e.g. every sentence was removed as a per-week
+# duplicate, or extraction produced no text). Such a story correctly has no Solr document,
+# so leaving it queued would make the importer re-pull and re-attempt it on every cycle
+# forever, growing the queue without bound and (in daemon mode) keeping the delta above
+# MIN_STORIES_TO_PROCESS so the loop never throttles. Dropping it is safe: if the story is
+# ever re-extracted and gains sentences, the insert into processed_stories re-fires the
+# solr-import trigger and re-queues it. The collect_date age gate makes sure we only drop
+# stories whose extraction is long finished, never one that is merely mid-flight this cycle.
+sub _delete_unsendable_stories_from_import_queue
+{
+    my ( $db, $unsent_ids ) = @_;
+
+    return unless ( @{ $unsent_ids } );
+
+    my $stories_queue_table = _get_stories_queue_table();
+
+    my $id_table = $db->get_temporary_ids_table( $unsent_ids );
+
+    $db->query(
+        <<SQL
+        DELETE FROM $stories_queue_table q
+        WHERE q.stories_id IN ( select id from $id_table )
+          AND EXISTS ( select 1 from processed_stories ps where ps.stories_id = q.stories_id )
+          AND NOT EXISTS ( select 1 from story_sentences ss where ss.stories_id = q.stories_id )
+          AND EXISTS (
+                select 1 from stories s
+                where s.stories_id = q.stories_id
+                  and s.collect_date < now() - interval '1 day'
+          )
 SQL
     );
 }

@@ -58,6 +58,10 @@ sub test_retry_unsent_stories($)
     my $story  = MediaWords::Test::DB::Create::create_test_story( $db, 'unsent', $feed );
     my $stories_id = $story->{ stories_id };
 
+    # a not-yet-extracted story is freshly collected; keep collect_date recent so it is
+    # treated as in-flight (retry) rather than a permanently-unsendable story to drop.
+    $db->query( "update stories set collect_date = now() where stories_id = ?", $stories_id );
+
     # mark it processed so it gets queued for import (a processed_stories insert queues the
     # story), but it still has no sentences, so it cannot be sent yet.
     $db->create( 'processed_stories', { stories_id => $stories_id } );
@@ -93,11 +97,53 @@ SQL
     is( _num_in_solr( $db, $stories_id ),       1, 'story present in Solr once sent' );
 }
 
+# Regression test for the companion problem: a story that can NEVER be sent (processed,
+# but no story_sentences -- e.g. every sentence removed as a per-week duplicate) must not
+# linger in the queue forever. If it did, the daemon would re-pull and re-attempt it every
+# cycle and the queue would grow without bound. Such a story (once its extraction is long
+# finished, enforced by a collect_date age gate) must be dead-lettered: removed from the
+# queue, never logged as imported, never in Solr.
+sub test_dead_letter_unsendable_stories($)
+{
+    my ( $db ) = @_;
+
+    MediaWords::Test::Solr::create_indexed_test_story_stack(
+        $db,
+        { medium_dl => { feed_dl => [ map { "story_dl_$_" } ( 1 .. 3 ) ] } }
+    );
+
+    my $medium = MediaWords::Test::DB::Create::create_test_medium( $db, 'deadletter' );
+    my $feed   = MediaWords::Test::DB::Create::create_test_feed( $db, 'deadletter', $medium );
+    my $story  = MediaWords::Test::DB::Create::create_test_story( $db, 'deadletter', $feed );
+    my $stories_id = $story->{ stories_id };
+
+    # make the story old enough that its extraction is definitely finished, so a lack of
+    # sentences means it is permanently unsendable (not merely mid-flight this cycle).
+    $db->query( "update stories set collect_date = now() - interval '2 days' where stories_id = ?", $stories_id );
+
+    # mark it processed (queues it) but leave it with no story_sentences
+    $db->create( 'processed_stories', { stories_id => $stories_id } );
+    $db->commit();
+
+    is( _num_in_queue( $db, $stories_id ), 1, 'permanently-unsendable story is queued' );
+
+    my $solr_before = MediaWords::Solr::get_solr_num_found( $db, { q => '*:*' } );
+
+    MediaWords::Solr::Dump::import_data( $db, { empty_queue => 1, throttle => 0 } );
+
+    is( _num_in_queue( $db, $stories_id ),      0, 'permanently-unsendable story is dead-lettered (removed from queue)' );
+    is( _num_in_import_log( $db, $stories_id ), 0, 'dead-lettered story is not logged as imported' );
+    is( _num_in_solr( $db, $stories_id ),       0, 'dead-lettered story is not in Solr' );
+    is( MediaWords::Solr::get_solr_num_found( $db, { q => '*:*' } ),
+        $solr_before, 'total Solr count unchanged by the dead-lettered story' );
+}
+
 sub main
 {
     my $db = MediaWords::DB::connect_to_db();
 
     test_retry_unsent_stories( $db );
+    test_dead_letter_unsendable_stories( $db );
 
     done_testing();
 }
