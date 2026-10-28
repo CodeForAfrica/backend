@@ -1,0 +1,210 @@
+name: civicsignal
+
+x-runtime: &runtime
+  platform: linux/amd64
+  user: "1000"
+  init: true
+  restart: unless-stopped
+
+x-environment: &environment
+  MC_DATABASE_URL: ${MC_DATABASE_URL:?Set MC_DATABASE_URL to the existing PostgreSQL database}
+  MC_RABBITMQ_PASSWORD: ${MC_RABBITMQ_PASSWORD:-civicsignal-local}
+  MC_RABBITMQ_HOST: rabbitmq-server
+  MC_SOLR_URL: http://solr-shard-01:8983/solr
+  MC_EXTRACTOR_API_URL: http://extract-article-from-page:8080/extract
+  MC_SOLR_IMPORT_MAX_QUEUED_STORIES: "5000"
+  MC_DOWNLOADS_STORAGE_LOCATIONS: ${MC_DOWNLOADS_STORAGE_LOCATIONS:-postgresql}
+  MC_PUBLIC_STORE_TYPE: ${MC_PUBLIC_STORE_TYPE:-postgresql}
+  MC_PUBLIC_STORE_SALT: ${MC_PUBLIC_STORE_SALT:-civicsignal}
+  MC_DOWNLOADS_AMAZON_S3_ACCESS_KEY_ID: ${MC_DOWNLOADS_AMAZON_S3_ACCESS_KEY_ID:-}
+  MC_DOWNLOADS_AMAZON_S3_SECRET_ACCESS_KEY: ${MC_DOWNLOADS_AMAZON_S3_SECRET_ACCESS_KEY:-}
+  MC_DOWNLOADS_AMAZON_S3_BUCKET_NAME: ${MC_DOWNLOADS_AMAZON_S3_BUCKET_NAME:-}
+  MC_DOWNLOADS_AMAZON_S3_DIRECTORY_NAME: ${MC_DOWNLOADS_AMAZON_S3_DIRECTORY_NAME:-}
+  MC_PUBLIC_AMAZON_S3_ACCESS_KEY_ID: ${MC_PUBLIC_AMAZON_S3_ACCESS_KEY_ID:-}
+  MC_PUBLIC_AMAZON_S3_SECRET_ACCESS_KEY: ${MC_PUBLIC_AMAZON_S3_SECRET_ACCESS_KEY:-}
+  MC_PUBLIC_AMAZON_S3_BUCKET_NAME: ${MC_PUBLIC_AMAZON_S3_BUCKET_NAME:-}
+  MC_PUBLIC_AMAZON_S3_DIRECTORY_NAME: ${MC_PUBLIC_AMAZON_S3_DIRECTORY_NAME:-}
+  MC_DOWNLOADS_READ_ALL_FROM_S3: ${MC_DOWNLOADS_READ_ALL_FROM_S3:-0}
+  MC_DOWNLOADS_FALLBACK_POSTGRESQL_TO_S3: ${MC_DOWNLOADS_FALLBACK_POSTGRESQL_TO_S3:-0}
+  MC_DOWNLOADS_CACHE_S3: ${MC_DOWNLOADS_CACHE_S3:-0}
+  MC_EMAIL_FROM_ADDRESS: ${MC_EMAIL_FROM_ADDRESS:-info@app.civicsignal.africa}
+  MC_EMAIL_UNSUBSCRIBE: ${MC_EMAIL_UNSUBSCRIBE:-support@codeforafrica.org}
+  MC_SMTP_HOST: ${MC_SMTP_HOST:-mail-postfix-server}
+  MC_SMTP_PORT: ${MC_SMTP_PORT:-25}
+  MC_SMTP_STARTTLS: ${MC_SMTP_STARTTLS:-0}
+  MC_SMTP_USERNAME: ${MC_SMTP_USERNAME:-}
+  MC_SMTP_PASSWORD: ${MC_SMTP_PASSWORD:-}
+
+  MC_CLIFF_ANNOTATOR_URL: http://annotators:8082/cliff/parse/text
+  MC_NYTLABELS_ANNOTATOR_URL: http://annotators:8081/predict.json
+  MC_CLIFF_VERSION_TAG: cliff_clavin_v2.6.1
+  MC_CLIFF_GEONAMES_TAG_SET: cliff_geonames
+  MC_CLIFF_ORGANIZATIONS_TAG_SET: cliff_organizations
+  MC_CLIFF_PEOPLE_TAG_SET: cliff_people
+  MC_NYTLABELS_VERSION_TAG: nyt_labeller_v1.0.0
+  MC_NYTLABELS_TAG_SET: nyt_labels
+
+services:
+  webapp-api:
+    <<: *runtime
+    image: civicsignal/webapp-api:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: webapp-api
+    mem_limit: 1024m
+    environment: *environment
+    depends_on:
+      rabbitmq-server:
+        condition: service_healthy
+      solr-shard-01:
+        condition: service_healthy
+
+  webapp-httpd:
+    <<: *runtime
+    user: "0"
+    image: civicsignal/webapp-httpd:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: webapp-httpd
+    mem_limit: 256m
+    ports:
+      - "${MC_HTTP_PORT:-8082}:80"
+    environment:
+      MC_WEBAPP_API_UPSTREAM: webapp-api:9090
+    volumes:
+      - runtime-data:/state
+    depends_on:
+      - webapp-api
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/status"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+  solr-zookeeper:
+    <<: *runtime
+    image: civicsignal/solr-zookeeper:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: solr-zookeeper
+    mem_limit: 512m
+    environment:
+      MC_ZOOKEEPER_DATA_DIR: /state/zookeeper
+    volumes:
+      - runtime-data:/state
+
+  solr-shard-01:
+    <<: *runtime
+    image: civicsignal/solr-shard-01:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: solr-shard-01
+    mem_limit: 4096m
+    environment:
+      MC_SOLR_SHARD_COUNT: "1"
+      MC_SOLR_DATA_DIR: /state/solr
+      MC_SOLR_ADVERTISED_HOST: solr-shard-01
+    volumes:
+      - runtime-data:/state
+    depends_on:
+      - solr-zookeeper
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8983/solr/admin/info/system?wt=json"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  rabbitmq-server:
+    <<: *runtime
+    user: "1000:1000"
+    image: civicsignal/rabbitmq-server:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: rabbitmq-server
+    mem_limit: 512m
+    environment:
+      MC_RABBITMQ_PASSWORD: ${MC_RABBITMQ_PASSWORD:-civicsignal-local}
+    volumes:
+      - runtime-data:/state
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+
+  extract-article-from-page:
+    <<: *runtime
+    image: civicsignal/extract-article-from-page:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: extract-article-from-page
+    mem_limit: 512m
+    environment: *environment
+
+  maintenance:
+    <<: *runtime
+    user: "0"
+    image: civicsignal/maintenance:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: maintenance
+    mem_limit: 1024m
+    environment: *environment
+    volumes:
+      - runtime-data:/state
+
+  pipeline:
+    <<: *runtime
+    image: civicsignal/pipeline:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: pipeline
+    mem_limit: 4096m
+    environment: *environment
+    depends_on:
+      rabbitmq-server:
+        condition: service_healthy
+      solr-shard-01:
+        condition: service_healthy
+      extract-article-from-page:
+        condition: service_started
+
+  topics:
+    <<: *runtime
+    image: civicsignal/topics:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: topics
+    mem_limit: 4096m
+    environment: *environment
+    depends_on:
+      rabbitmq-server:
+        condition: service_healthy
+      solr-shard-01:
+        condition: service_healthy
+
+  annotators:
+    <<: *runtime
+    user: "65534"
+    image: civicsignal/annotators:local
+    build:
+      context: .
+      args:
+        CIVICSIGNAL_COMPONENT: annotators
+    mem_limit: 4096m
+
+
+volumes:
+  runtime-data:

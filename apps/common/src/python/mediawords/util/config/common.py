@@ -1,7 +1,7 @@
 import collections
 import re
-from typing import List, Pattern, Optional
-from urllib.parse import urlparse, ParseResult
+from typing import List, Pattern, Optional, Dict
+from urllib.parse import urlparse, ParseResult, unquote, parse_qs, quote, urlencode
 
 from mediawords.util.config import env_value, McConfigException
 from mediawords.util.parse_json import decode_json, McDecodeJSONException
@@ -15,14 +15,17 @@ def _url_from_env(name: str) -> Optional[ParseResult]:
     value = env_value(name, required=False, allow_empty_string=True)
     if not value:
         return None
-    return urlparse(value)
+    url = urlparse(value)
+    if name == 'MC_DATABASE_URL' and (url.scheme not in ('postgres', 'postgresql') or not url.hostname):
+        raise McConfigException('MC_DATABASE_URL must be a PostgreSQL URL with a hostname')
+    return url
 
 
 def _url_attr(env_name: str, attr: str, default):
     """Return one attribute (e.g. "hostname", "port") of the URL in an optional env var, or a default."""
     url = _url_from_env(env_name)
     value = getattr(url, attr, None) if url else None
-    return value or default
+    return unquote(value) if isinstance(value, str) and value else (value or default)
 
 
 class ConnectRetriesConfig(object):
@@ -60,14 +63,14 @@ class DatabaseConfig(object):
     def port() -> int:
         """Port."""
         # Container's exposed port from docker-compose.yml
-        return _url_attr('MC_DATABASE_URL', 'port', 6432)
+        return _url_attr('MC_DATABASE_URL', 'port', 5432 if _url_from_env('MC_DATABASE_URL') else 6432)
 
     @staticmethod
     def database_name() -> str:
         """Database name."""
         url = _url_from_env('MC_DATABASE_URL')
         name = url.path.lstrip('/') if url else None
-        return name if name else "mediacloud"
+        return unquote(name) if name else "mediacloud"
 
     @staticmethod
     def username() -> str:
@@ -78,6 +81,31 @@ class DatabaseConfig(object):
     def password() -> str:
         """Password."""
         return _url_attr('MC_DATABASE_URL', 'password', "mediacloud")
+
+    @staticmethod
+    def connection_options() -> Dict[str, str]:
+        """Preserve libpq URL options such as sslmode without overriding credentials."""
+        url = _url_from_env('MC_DATABASE_URL')
+        if not url:
+            return {}
+        allowed = {'sslmode', 'sslrootcert', 'sslcert', 'sslkey', 'connect_timeout', 'options'}
+        query = parse_qs(url.query)
+        unknown = set(query) - allowed
+        if unknown:
+            raise McConfigException('Unsupported MC_DATABASE_URL options: ' + ', '.join(sorted(unknown)))
+        return {name: values[-1] for name, values in query.items()}
+
+    @staticmethod
+    def connection_url(scheme: str = 'postgresql') -> str:
+        """URL for clients such as Celery's SQLAlchemy backend, including TLS options."""
+        host = DatabaseConfig.hostname()
+        if ':' in host:
+            host = '[' + host + ']'
+        url = '{}://{}:{}@{}:{}/{}'.format(scheme, quote(DatabaseConfig.username(), safe=''),
+                                         quote(DatabaseConfig.password(), safe=''), host,
+                                         DatabaseConfig.port(), quote(DatabaseConfig.database_name(), safe=''))
+        options = DatabaseConfig.connection_options()
+        return url + ('?' + urlencode(options) if options else '')
 
     @staticmethod
     def retries() -> ConnectRetriesConfig:
@@ -123,7 +151,7 @@ class RabbitMQConfig(object):
     def hostname() -> str:
         """Hostname."""
         # Container's name from docker-compose.yml
-        return _url_attr('MC_RABBITMQ_URL', 'hostname', "rabbitmq-server")
+        return env_value('MC_RABBITMQ_HOST', required=False) or _url_attr('MC_RABBITMQ_URL', 'hostname', "rabbitmq-server")
 
     @staticmethod
     def port() -> int:
@@ -139,13 +167,22 @@ class RabbitMQConfig(object):
     @staticmethod
     def password() -> str:
         """Password."""
-        return _url_attr('MC_RABBITMQ_URL', 'password', "mediacloud")
+        return env_value('MC_RABBITMQ_PASSWORD', required=False) or _url_attr('MC_RABBITMQ_URL', 'password', "mediacloud")
 
     @staticmethod
     def vhost() -> str:
         """Virtual host."""
         url = _url_from_env('MC_RABBITMQ_URL')
         return url.path[1:] if url and url.path else "/mediacloud"
+
+    @staticmethod
+    def connection_url() -> str:
+        host = RabbitMQConfig.hostname()
+        if ':' in host:
+            host = '[' + host + ']'
+        return 'amqp://{}:{}@{}:{}/{}'.format(quote(RabbitMQConfig.username(), safe=''),
+                                            quote(RabbitMQConfig.password(), safe=''), host,
+                                            RabbitMQConfig.port(), quote(RabbitMQConfig.vhost(), safe=''))
 
     @staticmethod
     def timeout() -> int:
@@ -161,30 +198,28 @@ class SMTPConfig(object):
     def hostname() -> str:
         """Hostname."""
         # Container's name from docker-compose.yml
-        return 'mail-postfix-server'
+        return env_value('MC_SMTP_HOST', required=False) or 'mail-postfix-server'
 
     @staticmethod
     def port() -> int:
         """Port."""
         # Container's exposed port from docker-compose.yml
-        return 25
+        return int(env_value('MC_SMTP_PORT', required=False) or 25)
 
     @staticmethod
     def use_starttls() -> bool:
         """Use STARTTLS? If you enable that, you probably want to change the port to 587."""
-        # FIXME remove altogether, not used
-        return False
+        return (env_value('MC_SMTP_STARTTLS', required=False) or '0') == '1'
 
     @staticmethod
     def username() -> str:
         """Username."""
-        # FIXME remove, not used
-        return ''
+        return env_value('MC_SMTP_USERNAME', required=False, allow_empty_string=True) or ''
 
     @staticmethod
     def password() -> str:
         """Password."""
-        return ''
+        return env_value('MC_SMTP_PASSWORD', required=False, allow_empty_string=True) or ''
 
     @staticmethod
     def unsubscribe_address() -> str:
