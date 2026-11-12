@@ -10,6 +10,24 @@ use warnings;
 use Modern::Perl "2015";
 use MediaWords::CommonLibs;
 
+# live row estimate for a table plus every partition / inheritance child under it
+sub _estimated_rows($$)
+{
+    my ( $db, $table ) = @_;
+
+    my ( $rows ) = $db->query( <<SQL, $table )->flat;
+with recursive tree ( oid ) as (
+    select \$1::regclass::oid
+    union all
+    select i.inhrelid from pg_inherits i join tree on ( i.inhparent = tree.oid )
+)
+select coalesce( sum( s.n_live_tup ), 0 )::bigint
+    from tree join pg_stat_user_tables s on ( s.relid = tree.oid )
+SQL
+
+    return $rows;
+}
+
 # update the data in the mediacloud_stats data to reflect the state of the systems (total stories, downloads, etc).
 sub refresh_stats($)
 {
@@ -27,32 +45,13 @@ select count(*) as daily_stories
     from stories_collected_in_past_day
 SQL
 
-    ( $stats->{ total_stories } ) = $db->query( <<SQL )->flat;
-select reltuples::bigint total_stories
-    from pg_class c join
-        pg_namespace n on ( n.oid = c.relnamespace )
-    where
-        n.nspname = 'public' and
-        c.relname = 'stories'
-SQL
-
-    ( $stats->{ total_downloads } ) = $db->query( <<SQL )->flat;
-select reltuples::bigint total_downloads
-    from pg_class c join
-        pg_namespace n on ( n.oid = c.relnamespace )
-    where
-        n.nspname = 'public' and
-        c.relname = 'downloads'
-SQL
-
-    ( $stats->{ total_sentences } ) = $db->query( <<SQL )->flat;
-select reltuples::bigint total_sentences
-    from pg_class c join
-        pg_namespace n on ( n.oid = c.relnamespace )
-    where
-        n.nspname = 'public' and
-        c.relname = 'story_sentences'
-SQL
+    # Row estimates summed over the table and all its partitions. reltuples on the parent was wrong:
+    # it is 0 for partitioned tables (downloads, story_sentences_p) and only refreshed by (auto)analyze
+    # on stories, so it froze for months. n_live_tup is kept current by the stats collector.
+    # ponytail: estimate, resets to ~0 after pg_stat_reset() or crash recovery until autovacuum catches up
+    $stats->{ total_stories }   = _estimated_rows( $db, 'public.stories' );
+    $stats->{ total_downloads } = _estimated_rows( $db, 'public.downloads' );
+    $stats->{ total_sentences } = _estimated_rows( $db, 'public.story_sentences_p' );
 
     ( $stats->{ active_crawled_feeds } ) = $db->query( <<SQL )->flat;
 select count(*) active_crawled_feeds
