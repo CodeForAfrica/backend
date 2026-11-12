@@ -33,4 +33,9 @@ sub max_queued_stories()
     return _python_config()->max_queued_stories();
 }
 
+sub min_replication_factor()
+{
+    return _python_config()->min_replication_factor();
+}
+
 1;

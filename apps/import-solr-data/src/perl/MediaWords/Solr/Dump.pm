@@ -279,8 +279,24 @@ sub _import_stories($)
     my ( $import_url, $import_params ) = _get_import_url_params();
 
     DEBUG "importing " . scalar( @{ $json->{ stories_ids } } ) . " stories into solr ...";
-    eval { MediaWords::Solr::Request::solr_request( $import_url, $import_params, $json->{ json }, 'application/json; charset=utf-8' ); };
+    my $import_response;
+    eval { $import_response = MediaWords::Solr::Request::solr_request( $import_url, $import_params, $json->{ json }, 'application/json; charset=utf-8' ); };
     die( "error importing to solr: $@" ) if ( $@ );
+
+    # Confirm Solr actually stored the batch before we treat it as imported. With min_rf set
+    # on the request (see _get_import_url_params), Solr reports the achieved replication factor
+    # (rf) in the response. A distributed update can still return HTTP 200 when one shard failed
+    # to persist its share of the batch; in that case rf comes back below min_rf. When that
+    # happens, do NOT commit, dequeue, or log the stories: leave them queued so the next cycle
+    # retries them instead of marking them imported and losing them. overwrite=true keeps the
+    # retry idempotent (re-sending a story that did land just overwrites it).
+    unless ( _import_achieved_replication( $import_response, $import_params->{ 'min_rf' } ) )
+    {
+        ERROR( "solr import did not meet min replication factor ("
+              . ( $import_params->{ 'min_rf' } // 'unset' )
+              . "); leaving " . scalar( @{ $json->{ stories_ids } } ) . " stories queued for retry" );
+        return [];
+    }
 
     TRACE( "committing solr index changes ..." );
     MediaWords::Solr::Request::solr_request( 'update', { 'commit' => 'true' } );
@@ -326,7 +342,48 @@ sub _get_import_url_params
         'overwrite' => 'true',
     };
 
+    # Ask Solr to report the achieved replication factor (rf) for the update so we can verify
+    # the batch was actually stored (see _import_stories / _import_achieved_replication). A
+    # value of 0 disables the check; the default of 1 catches a shard that stored no replicas.
+    my $min_rf = MediaWords::Util::Config::SolrImport::min_replication_factor();
+    $url_params->{ 'min_rf' } = $min_rf if ( defined( $min_rf ) && $min_rf > 0 );
+
     return ( 'update', $url_params );
+}
+
+# Return true if a Solr update response confirms the batch met the minimum replication factor.
+#
+# Solr includes the achieved replication factor (rf) in the update response only when the request
+# carried a min_rf parameter. rf is the minimum, across all shards the batch touched, of the number
+# of replicas that stored the update, so rf < min_rf means at least one shard did not persist its
+# share even though the HTTP request succeeded.
+#
+# When the check is disabled ($min_rf unset/0), or the response cannot be parsed, or Solr did not
+# report rf at all, this returns true (and warns): the point of the check is to catch a reported
+# shortfall, not to halt importing on an unexpected response shape, which would risk an outage with
+# no corresponding data-loss signal.
+sub _import_achieved_replication
+{
+    my ( $response, $min_rf ) = @_;
+
+    return 1 unless ( defined( $min_rf ) && $min_rf > 0 );
+
+    my $decoded = eval { JSON::XS::decode_json( $response ) };
+    if ( $@ || ref( $decoded ) ne 'HASH' )
+    {
+        WARN( "unable to parse solr import response to verify replication; assuming success: $@" );
+        return 1;
+    }
+
+    my $rf = $decoded->{ responseHeader }->{ rf } // $decoded->{ rf };
+
+    if ( !defined( $rf ) )
+    {
+        WARN( "solr import response did not report a replication factor (rf); cannot verify batch was stored" );
+        return 1;
+    }
+
+    return $rf >= $min_rf;
 }
 
 # store in memory the current date according to postgres
